@@ -20,6 +20,15 @@
         </div>
         {!! Form::token() !!}
 
+        <div class="form-group" style="margin-top:15px;">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="gdpr_consent" value="1" required>
+                    Autorizzo il trattamento dei miei dati personali ai sensi del Regolamento (UE) 2016/679 (GDPR) e dell'informativa privacy fornita dall'organizzatore.
+                </label>
+            </div>
+        </div>
+
         <input class="btn btn-lg btn-success card-submit" style="width:100%;" type="submit" value="@lang("Public_ViewEvent.complete_payment")">
 
     </form>
