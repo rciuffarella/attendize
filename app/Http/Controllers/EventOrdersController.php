@@ -150,6 +150,7 @@ class EventOrdersController extends MyBaseController
 
         return response()->json([
             'status'      => 'success',
+            'message'     => trans('Controllers.ticket_successfully_resent'),
             'redirectUrl' => '',
         ]);
     }

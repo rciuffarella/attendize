@@ -30,14 +30,17 @@ class SetViewVariables
              * Set up JS across all views
              */
             JavaScript::put([
-                'User'                => [
+                'User'                 => [
                     'full_name'    => Auth::check() ? Auth::user()->full_name : '',
                     'email'        => Auth::check() ? Auth::user()->email : '',
                     'is_confirmed' => Auth::check() ? Auth::user()->is_confirmed : false,
                 ],
-                'DateTimeFormat'      => config('attendize.default_date_picker_format'),
-                'DateSeparator'       => config('attendize.default_date_picker_seperator'),
-                'GenericErrorMessage' => trans('Controllers.whoops'),
+                'DateTimeFormat'       => config('attendize.default_date_picker_format'),
+                'DateSeparator'        => config('attendize.default_date_picker_seperator'),
+                // Messaggio di errore generico usato negli script JS
+                'GenericErrorMessage'  => trans('Controllers.whoops'),
+                // Alias usato in alcuni punti del JS (bug storico: nome al plurale)
+                'GenericErrorMessages' => trans('Controllers.whoops'),
             ]);
         }
 
