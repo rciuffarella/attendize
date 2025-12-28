@@ -40,49 +40,69 @@
 
         .event-card {
             background: #ffffff;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.08);
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(15,23,42,.12);
             margin-bottom: 25px;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
-            height: 100%;
+            flex-direction: row; /* rettangolare orizzontale */
+        }
+
+        .event-card-image {
+            flex: 0 0 38%;
+            background-color: #000; /* per incorniciare banner larghi */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .event-card-image img {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
+            height: auto;
+            max-height: 260px;
+            object-fit: contain; /* non croppa l'immagine */
             display: block;
         }
 
         .event-card-body {
-            padding: 15px 18px 18px;
+            flex: 1 1 auto;
+            padding: 20px 24px 22px;
             display: flex;
             flex-direction: column;
             height: 100%;
         }
 
         .event-card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            margin: 0 0 6px;
+            margin: 0 0 8px;
+            color: #1f2933;
+            white-space: normal;
+            word-wrap: break-word;
         }
 
         .event-card-date {
             font-size: 14px;
-            color: #777;
+            color: #6b7280;
             margin-bottom: 4px;
         }
 
         .event-card-venue {
             font-size: 14px;
-            color: #555;
-            margin-bottom: 12px;
+            color: #4b5563;
+            margin-bottom: 16px;
         }
 
         .event-card-actions {
             margin-top: auto;
+            text-align: right;
+        }
+
+        .event-card-actions .btn {
+            display: inline-block;
+            width: auto;
+            min-width: 140px;
+            border-radius: 9999px;
         }
 
         @media (max-width: 767px) {
@@ -94,8 +114,12 @@
                 font-size: 24px;
             }
 
+            .event-card {
+                flex-direction: column;
+            }
+
             .event-card-image img {
-                height: 160px;
+                max-height: 220px;
             }
         }
     </style>
@@ -122,7 +146,7 @@
         </div>
         <div class="row events-grid">
             @forelse($upcoming_events as $event)
-                <div class="col-xs-12 col-sm-6 col-md-4">
+                <div class="col-xs-12">
                     <div class="event-card">
                         @if(count($event->images))
                             <div class="event-card-image">
