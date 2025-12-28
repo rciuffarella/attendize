@@ -2,14 +2,28 @@
 
 # Base image with nginx, php-fpm and composer built on debian
 FROM wyveo/nginx-php-fpm:php74 as base
-RUN apt-get update && apt-get install -y wait-for-it libxrender1
+
+# I repository Debian originali per buster non sono più disponibili direttamente.
+# Aggiorniamo le sorgenti per usare archive.debian.org ed eliminiamo i repository terzi
+# (nginx, sury) che causano errori di firma/404, così l'installazione dei pacchetti funziona.
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list \
+    && sed -i 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list \
+    && sed -i '/nginx.org/d' /etc/apt/sources.list \
+    && rm -f /etc/apt/sources.list.d/* \
+    && apt-get -o Acquire::Check-Valid-Until=false update \
+    && apt-get install -y wait-for-it libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set up code
 WORKDIR /usr/share/nginx/html
 COPY . .
 
 # run composer, chmod files, setup laravel key
-RUN ./scripts/setup
+# (equivalente di scripts/setup, ma inline per evitare problemi di eseguibilità nello stage Docker)
+RUN composer install --no-interaction \
+    && cp .env.example .env \
+    && chmod -R a+w .env storage/ bootstrap/cache/ \
+    && php artisan key:generate
 
 # The worker container runs the laravel queue in the background
 FROM base as worker

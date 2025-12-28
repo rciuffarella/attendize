@@ -1,56 +1,66 @@
-<form class="online_payment" action="<?php echo route('postCreateOrder', ['event_id' => $event->id]); ?>" method="post" id="stripe-payment-form">
-    <div class="form-row">
-        <label for="card-element">
-            @lang("Public_ViewEvent.stripe_credit_or_debit_card")
-        </label>
-        <div id="card-element">
+@php
+    $stripeConfig = $account_payment_gateway->config;
+@endphp
 
-        </div>
-
-        <div id="card-errors" role="alert"></div>
+@if(!is_array($stripeConfig) || empty($stripeConfig['publishableKey']))
+    <div class="alert alert-danger">
+        Stripe non è stato configurato correttamente per questo account. Contatta l'organizzatore o abilita un metodo di pagamento offline.
     </div>
-    {!! Form::token() !!}
+@else
+    <form class="online_payment" action="<?php echo route('postCreateOrder', ['event_id' => $event->id]); ?>" method="post" id="stripe-payment-form">
+        <div class="form-row">
+            <label for="card-element">
+                @lang("Public_ViewEvent.stripe_credit_or_debit_card")
+            </label>
+            <div id="card-element">
 
-    <input class="btn btn-lg btn-success card-submit" style="width:100%;" type="submit" value="@lang("Public_ViewEvent.complete_payment")">
+            </div>
 
-</form>
-<script type="text/javascript" src="https://js.stripe.com/v3/"></script>
-<script type="text/javascript">
+            <div id="card-errors" role="alert"></div>
+        </div>
+        {!! Form::token() !!}
 
-    var stripe = Stripe('<?php echo $account_payment_gateway->config['publishableKey']; ?>');
-    var elements = stripe.elements();
+        <input class="btn btn-lg btn-success card-submit" style="width:100%;" type="submit" value="@lang("Public_ViewEvent.complete_payment")">
 
-    var style = {
-        base: {
-            color: '#32325d',
-            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-            fontSmoothing: 'antialiased',
-            fontSize: '16px',
-            '::placeholder': {
-                color: '#aab7c4'
+    </form>
+    <script type="text/javascript" src="https://js.stripe.com/v3/"></script>
+    <script type="text/javascript">
+
+        var stripe = Stripe('<?php echo $stripeConfig['publishableKey']; ?>');
+        var elements = stripe.elements();
+
+        var style = {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
             }
-        },
-        invalid: {
-            color: '#fa755a',
-            iconColor: '#fa755a'
-        }
-    };
+        };
 
-    var card = elements.create('card',  {hidePostalCode: true, style: style});
+        var card = elements.create('card',  {hidePostalCode: true, style: style});
 
-    card.mount('#card-element');
+        card.mount('#card-element');
 
-    card.addEventListener('change', function(event) {
-        var displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
+        card.addEventListener('change', function(event) {
+            var displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
 
 
-</script>
+    </script>
+@endif
 <style type="text/css">
 
     .StripeElement {

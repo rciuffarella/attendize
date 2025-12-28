@@ -24,6 +24,18 @@
 <section id="intro" class="container">
     <div class="row">
         <div class="col-md-12">
+
+            {{-- Banner evento in evidenza --}}
+            @if($event->images->count())
+                <div class="event-banner" style="margin-bottom: 20px;">
+                    <a href="{{ $event->event_url }}">
+                        <img src="{{ asset($event->images->first()['image_path']) }}"
+                             alt="{{ $event->title }}"
+                             style="width: 100%; max-height: 420px; object-fit: cover; border-radius: 6px;">
+                    </a>
+                </div>
+            @endif
+
             <h1 property="name">{{$event->title}}</h1>
             <div class="event_venue">
                 <span property="startDate" content="{{ $event->start_date->toIso8601String() }}">
