@@ -29,6 +29,7 @@
                     <th>@lang("Attendee.name")</th>
                     <th>@lang("Attendee.email")</th>
                     <th>@lang("Order.ticket")</th>
+                    <th>Posto</th>
                     <th>@lang("Order.order_ref")</th>
                     <th>@lang("Order.purchase_date")</th>
                     <th>@lang("Order.arrived")</th>
@@ -40,6 +41,7 @@
                     <td>{{{$attendee->full_name}}}</td>
                     <td>{{{$attendee->email}}}</td>
                     <td>{{{$attendee->ticket->title}}}</td>
+                    <td>{{ $attendee->seat_label ?: '' }}</td>
                     <td>{{{$attendee->order->order_reference}}}</td>
                     <td>{{$attendee->created_at->format(config("attendize.default_datetime_format"))}}</td>
                     <td><input type="checkbox" style="border: 1px solid #000; height: 15px; width: 15px;" /></td>

@@ -18,6 +18,7 @@ use App\Models\PaymentGateway;
 use App\Models\QuestionAnswer;
 use App\Models\ReservedTickets;
 use App\Models\Ticket;
+use App\Models\Seat;
 use App\Services\Order as OrderService;
 use Services\PaymentGateway\Factory as PaymentGatewayFactory;
 use Carbon\Carbon;
@@ -216,7 +217,9 @@ class EventCheckoutController extends Controller
             'account_id'              => $event->account->id,
             'affiliate_referral'      => Cookie::get('affiliate_' . $event_id),
             'account_payment_gateway' => $activeAccountPaymentGateway,
-            'payment_gateway'         => $paymentGateway
+            'payment_gateway'         => $paymentGateway,
+            // IDs dei posti selezionati sulla mappa (es: "TICKETID:SEATID,TICKETID:SEATID")
+            'selected_seat_ids'       => $request->get('selected_seat_ids', ''),
         ]);
 
         /*
@@ -541,6 +544,30 @@ class EventCheckoutController extends Controller
             $ticket_questions = isset($request_data['ticket_holder_questions']) ? $request_data['ticket_holder_questions'] : [];
 
             /*
+             * Selezione posti (mappa): mappa ticket_id => array di seat_id selezionati
+             * Il campo hidden selected_seat_ids viene salvato nella sessione ticket_order_{event_id}
+             * con stringhe del tipo "TICKETID:SEATID,TICKETID:SEATID".
+             */
+            $selectedSeatIdsRaw = isset($ticket_order['selected_seat_ids'])
+                ? trim($ticket_order['selected_seat_ids'])
+                : '';
+            $selectedSeatsByTicket = [];
+            if ($selectedSeatIdsRaw !== '') {
+                $pairs = array_filter(explode(',', $selectedSeatIdsRaw));
+                foreach ($pairs as $pair) {
+                    $parts = explode(':', $pair);
+                    if (count($parts) !== 2) {
+                        continue;
+                    }
+                    $tId = (int) $parts[0];
+                    $sId = (int) $parts[1];
+                    if ($tId > 0 && $sId > 0) {
+                        $selectedSeatsByTicket[$tId][] = $sId;
+                    }
+                }
+            }
+
+            /*
              * Create the order
              */
             if (isset($ticket_order['transaction_id'])) {
@@ -649,6 +676,12 @@ class EventCheckoutController extends Controller
                 /*
                  * Create the attendees
                  */
+                // eventuali seats selezionati per questo ticket
+                $ticketId = $attendee_details['ticket']['id'];
+                $availableSeatsForTicket = isset($selectedSeatsByTicket[$ticketId])
+                    ? $selectedSeatsByTicket[$ticketId]
+                    : [];
+
                 for ($i = 0; $i < $attendee_details['qty']; $i++) {
 
                     $attendee = new Attendee();
@@ -657,9 +690,25 @@ class EventCheckoutController extends Controller
                     $attendee->email = sanitise($request_data["ticket_holder_email"][$i][$attendee_details['ticket']['id']]);
                     $attendee->event_id = $event_id;
                     $attendee->order_id = $order->id;
-                    $attendee->ticket_id = $attendee_details['ticket']['id'];
+                    $attendee->ticket_id = $ticketId;
                     $attendee->account_id = $event->account->id;
                     $attendee->reference_index = $attendee_increment;
+
+                    /*
+                     * Assegna un Seat selezionato (se disponibile) a questo attendee
+                     */
+                    if (!empty($availableSeatsForTicket)) {
+                        $seatId = array_shift($availableSeatsForTicket);
+                        $seat = Seat::find($seatId);
+                        if ($seat && $seat->status === 'free') {
+                            $attendee->seat_id = $seatId;
+                            $seat->status = 'sold';
+                            $seat->save();
+                        }
+                        // aggiorna la lista nel mapping, nel caso ci siano altri blocchi per lo stesso ticket
+                        $selectedSeatsByTicket[$ticketId] = $availableSeatsForTicket;
+                    }
+
                     $attendee->save();
 
 

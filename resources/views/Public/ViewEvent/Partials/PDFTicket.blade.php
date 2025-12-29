@@ -84,6 +84,10 @@
                             {{$attendee->first_name.' '.$attendee->last_name}}
                                 <h4>@lang("Ticket.ticket_type")</h4>
                             {{$attendee->ticket->title}}
+                                @if($attendee->seat_label)
+                                    <h4>Posto</h4>
+                                    {{$attendee->seat_label}}
+                                @endif
                                 <h4>@lang("Ticket.order_ref")</h4>
                             {{$order->order_reference}}
                                 <h4>@lang("Ticket.attendee_ref")</h4>

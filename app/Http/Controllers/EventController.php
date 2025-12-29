@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use Log;
 use Auth;
 use Image;
+use Illuminate\Support\Facades\DB;
 use Validator;
 use App\Models\Event;
 use App\Models\Organiser;
 use App\Models\EventImage;
+use App\Models\SeatMap;
+use App\Models\SeatZone;
+use App\Models\Seat;
 use Illuminate\Http\Request;
 use Spatie\GoogleCalendar\Event as GCEvent;
 
@@ -358,5 +362,115 @@ class EventController extends MyBaseController
         return redirect()->action(
             'EventDashboardController@showDashboard', ['event_id' => $event_id]
         );
+    }
+
+    /**
+     * Duplica un evento (bozza) mantenendo impostazioni, biglietti e mappa posti,
+     * ma azzerando le vendite e segnando il nuovo evento come non live.
+     *
+     * @param  Request  $request
+     * @param  int  $event_id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function postDuplicateEvent(Request $request, $event_id)
+    {
+        $originalEvent = Event::scope()
+            ->with(['tickets', 'images', 'seatMaps.zones.seats'])
+            ->findOrFail($event_id);
+
+        DB::beginTransaction();
+
+        try {
+            // 1) Duplica l'evento base
+            $newEvent = $originalEvent->replicate();
+
+            // Titolo e stato live
+            $newEvent->title = $originalEvent->title . ' (copia)';
+            $newEvent->is_live = 0;
+
+            // Azzeriamo eventuali volumi / metriche, se presenti
+            if (isset($newEvent->sales_volume)) {
+                $newEvent->sales_volume = 0;
+            }
+            if (isset($newEvent->organiser_fees_volume)) {
+                $newEvent->organiser_fees_volume = 0;
+            }
+
+            $newEvent->save();
+
+            // 2) Duplica le immagini evento
+            foreach ($originalEvent->images as $image) {
+                $newImage = $image->replicate();
+                $newImage->event_id = $newEvent->id;
+                $newImage->save();
+            }
+
+            // 3) Duplica i biglietti, tenendo traccia della mappa ID vecchio -> nuovo
+            $ticketIdMap = [];
+
+            foreach ($originalEvent->tickets as $ticket) {
+                $newTicket = $ticket->replicate();
+                $newTicket->event_id = $newEvent->id;
+
+                // Azzeriamo contatori di vendita
+                if (isset($newTicket->quantity_sold)) {
+                    $newTicket->quantity_sold = 0;
+                }
+                if (isset($newTicket->sales_volume)) {
+                    $newTicket->sales_volume = 0;
+                }
+                if (isset($newTicket->organiser_fees_volume)) {
+                    $newTicket->organiser_fees_volume = 0;
+                }
+
+                $newTicket->save();
+
+                $ticketIdMap[$ticket->id] = $newTicket->id;
+            }
+
+            // 4) Duplica eventuali mappe posti, zone e posti
+            foreach ($originalEvent->seatMaps as $seatMap) {
+                /** @var SeatMap $seatMap */
+                $newSeatMap = $seatMap->replicate();
+                $newSeatMap->event_id = $newEvent->id;
+                $newSeatMap->save();
+
+                foreach ($seatMap->zones as $zone) {
+                    /** @var SeatZone $zone */
+                    $newZone = $zone->replicate();
+                    $newZone->seat_map_id = $newSeatMap->id;
+
+                    // Ricollega la zona al ticket duplicato, se esiste
+                    if ($zone->ticket_id && isset($ticketIdMap[$zone->ticket_id])) {
+                        $newZone->ticket_id = $ticketIdMap[$zone->ticket_id];
+                    } else {
+                        $newZone->ticket_id = null;
+                    }
+
+                    $newZone->save();
+
+                    // Copia tutti i posti della zona, ma li rimette liberi
+                    foreach ($zone->seats as $seat) {
+                        /** @var Seat $seat */
+                        $newSeat = $seat->replicate();
+                        $newSeat->seat_zone_id = $newZone->id;
+                        $newSeat->status = 'free';
+                        $newSeat->save();
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('showEventDashboard', ['event_id' => $newEvent->id])
+                ->with('message', 'Evento duplicato correttamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e);
+
+            return redirect()->back()->withErrors([
+                'event' => 'Si è verificato un errore durante la duplicazione dell\'evento.',
+            ]);
+        }
     }
 }

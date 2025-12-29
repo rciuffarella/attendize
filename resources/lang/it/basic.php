@@ -42,6 +42,7 @@ return [
     'ticket_design' => 'Ticket Design',
     'access_codes' => 'Codici di accesso',
     'tickets' => 'Biglietti',
+    'seat_map' => 'Mappa posti',
     'thank_you' => 'Grazie',
     'TOP' => 'TOP',
     'total' => 'totale',

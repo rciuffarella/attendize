@@ -89,6 +89,9 @@
                                {!!Html::sortable_link(trans("ManageEvent.ticket"), $sort_by, 'ticket_id', $sort_order, ['q' => $q , 'page' => $attendees->currentPage()])!!}
                             </th>
                             <th>
+                                Posto
+                            </th>
+                            <th>
                                {!!Html::sortable_link(trans("Order.order_ref"), $sort_by, 'order_reference', $sort_order, ['q' => $q , 'page' => $attendees->currentPage()])!!}
                             </th>
                             <th></th>
@@ -105,6 +108,9 @@
                             </td>
                             <td>
                                 {{{$attendee->ticket->title}}}
+                            </td>
+                            <td>
+                                {{ $attendee->seat_label ?: '—' }}
                             </td>
                             <td>
                                 <a href="javascript:void(0);" data-modal-id="view-order-{{ $attendee->order->id }}" data-href="{{route('showManageOrder', ['order_id'=>$attendee->order->id])}}" title="View Order #{{$attendee->order->order_reference}}" class="loadModal">

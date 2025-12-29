@@ -17,6 +17,12 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="content">
+
+                        {{-- Per eventi con posti numerati mostriamo la piantina qui, prima della tabella biglietti --}}
+                        @if($event->is_seated)
+                            @include('Public.ViewEvent.Partials.SeatMapSelector')
+                        @endif
+
                         <div class="tickets_table_wrap">
                             <table class="table">
                                 <?php

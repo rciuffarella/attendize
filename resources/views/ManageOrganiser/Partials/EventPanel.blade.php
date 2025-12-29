@@ -51,6 +51,19 @@
                     <i class="ico-cog"></i> @lang("basic.manage")
                 </a>
             </li>
+
+            <li>
+                <a href="#"
+                   onclick="event.preventDefault(); document.getElementById('duplicate-event-{{$event->id}}').submit();">
+                    <i class="ico-copy"></i> Duplica
+                </a>
+                <form id="duplicate-event-{{$event->id}}"
+                      action="{{ route('postDuplicateEvent', ['event_id' => $event->id]) }}"
+                      method="POST"
+                      style="display:none;">
+                    {{ csrf_field() }}
+                </form>
+            </li>
         </ul>
     </div>
 </div>

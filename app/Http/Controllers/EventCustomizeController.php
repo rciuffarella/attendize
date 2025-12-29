@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendee;
 use App\Models\Event;
+use App\Models\Seat;
+use App\Models\SeatMap;
+use App\Models\SeatZone;
 use File;
 use Illuminate\Http\Request;
 use App\Models\Currency;
@@ -329,6 +333,370 @@ class EventCustomizeController extends MyBaseController
             'status'  => 'success',
             'message' => trans("Controllers.event_page_successfully_updated"),
             'runThis' => 'document.getElementById(\'previewIframe\').contentWindow.location.reload(true);',
+        ]);
+    }
+
+    /**
+     * Crea o aggiorna la piantina posti per un evento.
+     *
+     * Prima versione: gestisce solo il nome della mappa e abilita il flag is_seated sull'evento.
+     * L'editor grafico verrà aggiunto in passi successivi.
+     *
+     * @param  Request  $request
+     * @param  int  $event_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postEditEventSeatMap(Request $request, $event_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+
+        $rules = [
+            'seat_map_name'         => ['required', 'max:191'],
+            'background_image_path' => ['nullable', 'max:255'],
+            'capacity'              => ['nullable', 'integer', 'min:1', 'max:10000'],
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'   => 'error',
+                'messages' => $validator->messages()->toArray(),
+            ]);
+        }
+
+        // Per ora gestiamo una sola mappa per evento
+        $seatMap = $event->seatMaps()->first();
+        if (!$seatMap) {
+            $seatMap = new SeatMap();
+            $seatMap->event_id = $event->id;
+        }
+
+        $seatMap->name = $request->get('seat_map_name');
+        $seatMap->background_image_path = $request->get('background_image_path');
+        $seatMap->capacity = $request->get('capacity') ?: null;
+        $seatMap->save();
+
+        // Segna l'evento come "evento con posti numerati"
+        $event->is_seated = true;
+        $event->save();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => trans('Controllers.event_successfully_updated'),
+            'runThis' => 'window.location.reload();',
+        ]);
+    }
+
+    /**
+     * Crea una zona e genera automaticamente i posti (a griglia) per una seat map.
+     *
+     * @param  Request  $request
+     * @param  int  $event_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postCreateSeatZone(Request $request, $event_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+
+        if (!$event->seatMaps()->exists()) {
+            return response()->json([
+                'status'  => 'error',
+                'messages' => ['seat_map' => ['Devi prima creare una piantina nella sezione "Mappa posti".']],
+            ]);
+        }
+
+        $seatMap = $event->seatMaps()->first();
+
+        $rules = [
+            'zone_name'        => ['required', 'max:191'],
+            'zone_color'       => ['nullable', 'max:20'],
+            'ticket_id'        => ['nullable', 'integer'],
+            'rows'             => ['required', 'integer', 'min:1', 'max:50'],
+            'cols'             => ['required', 'integer', 'min:1', 'max:50'],
+            'position_x'       => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'position_y'       => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'start_row_label'  => ['nullable', 'string', 'max:5'],
+            'start_col_number' => ['nullable', 'integer', 'min:0', 'max:9999'],
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'   => 'error',
+                'messages' => $validator->messages()->toArray(),
+            ]);
+        }
+
+        $rows = (int) $request->get('rows');
+        $cols = (int) $request->get('cols');
+
+        // Gestione personalizzazione etichette file / colonne
+        $startRowLabel = trim((string) $request->get('start_row_label', ''));
+        if ($startRowLabel === '') {
+            $startRowAlpha = ord('A');
+        } else {
+            // prendiamo il primo carattere valido
+            $startRowAlpha = ord(mb_substr($startRowLabel, 0, 1, 'UTF-8'));
+        }
+        $startColNumber = $request->get('start_col_number');
+        if ($startColNumber === null || $startColNumber === '') {
+            $startColNumber = 1;
+        } else {
+            $startColNumber = (int) $startColNumber;
+        }
+
+        $zone = new SeatZone();
+        $zone->seat_map_id = $seatMap->id;
+        $zone->ticket_id = $request->get('ticket_id') ?: null;
+        // Salviamo i vecchi parametri di etichette per capire se sono cambiati
+        $oldStartRowAlpha = $zone->start_row_alpha ?: ord('A');
+        $oldStartColNum   = $zone->start_col_num ?: 1;
+
+        $zone->name = $request->get('zone_name');
+        $zone->color = $request->get('zone_color') ?: '#999999';
+        $zone->price_modifier = 0;
+        $zone->position_x = $request->get('position_x');
+        $zone->position_y = $request->get('position_y');
+        $zone->start_row_alpha = $startRowAlpha;
+        $zone->start_col_num = $startColNumber;
+        $zone->save();
+
+        // Genera i posti: righe personalizzabili (A,B,C... o da altra lettera) e numeri da start_col_number..N
+        $seats = [];
+        for ($r = 0; $r < $rows; $r++) {
+            $rowLabel = chr($startRowAlpha + $r);
+            for ($c = 1; $c <= $cols; $c++) {
+                $seats[] = [
+                    'seat_zone_id' => $zone->id,
+                    'row_label'    => $rowLabel,
+                    'seat_number'  => (string) ($startColNumber + $c - 1),
+                    'x'            => $c,
+                    'y'            => $r + 1,
+                    'status'       => 'free',
+                    'price_override' => null,
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ];
+            }
+        }
+
+        if (!empty($seats)) {
+            Seat::insert($seats);
+        }
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Zona e posti generati correttamente.',
+            'runThis' => 'window.location.reload();',
+        ]);
+    }
+
+    /**
+     * Aggiorna una zona esistente (solo nome, colore e ticket associato).
+     *
+     * Non modifica i posti già generati, per non impattare eventuali ordini.
+     *
+     * @param  Request  $request
+     * @param  int  $event_id
+     * @param  int  $zone_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postUpdateSeatZone(Request $request, $event_id, $zone_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+
+        if (!$event->seatMaps()->exists()) {
+            return response()->json([
+                'status'  => 'error',
+                'messages' => ['seat_map' => ['Piantina non trovata per questo evento.']],
+            ]);
+        }
+
+        $seatMap = $event->seatMaps()->first();
+        /** @var SeatZone|null $zone */
+        $zone = $seatMap->zones()->where('id', $zone_id)->first();
+
+        if (!$zone) {
+            return response()->json([
+                'status'  => 'error',
+                'messages' => ['zone' => ['Zona non trovata.']],
+            ]);
+        }
+
+        // Valori correnti delle etichette (prima di eventuali modifiche)
+        $oldStartRowAlpha = $zone->start_row_alpha ?: ord('A');
+        $oldStartColNum   = $zone->start_col_num ?: 1;
+
+        $rules = [
+            'zone_name'        => ['required', 'max:191'],
+            'zone_color'       => ['nullable', 'max:20'],
+            'ticket_id'        => ['nullable', 'integer'],
+            'position_x'       => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'position_y'       => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'rows'             => ['nullable', 'integer', 'min:1', 'max:50'],
+            'cols'             => ['nullable', 'integer', 'min:1', 'max:50'],
+            'start_row_label'  => ['nullable', 'string', 'max:5'],
+            'start_col_number' => ['nullable', 'integer', 'min:0', 'max:9999'],
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'   => 'error',
+                'messages' => $validator->messages()->toArray(),
+            ]);
+        }
+
+        $zone->name = $request->get('zone_name');
+        $zone->color = $request->get('zone_color') ?: '#999999';
+        $zone->ticket_id = $request->get('ticket_id') ?: null;
+        $zone->position_x = $request->get('position_x');
+        $zone->position_y = $request->get('position_y');
+
+        // Aggiorna eventuali preferenze su etichette fila/colonna
+        $startRowLabel = trim((string) $request->get('start_row_label', ''));
+        if ($startRowLabel !== '') {
+            $zone->start_row_alpha = ord(mb_substr($startRowLabel, 0, 1, 'UTF-8'));
+        }
+        $startColNumber = $request->get('start_col_number');
+        if ($startColNumber !== null && $startColNumber !== '') {
+            $zone->start_col_num = (int) $startColNumber;
+        }
+
+        $zone->save();
+
+        /*
+         * Se l'utente ha indicato nuove righe/colonne e non ci sono posti già assegnati
+         * a partecipanti, rigeneriamo la griglia per questa zona.
+         */
+        $newRows = $request->get('rows');
+        $newCols = $request->get('cols');
+
+        // Configurazione attuale
+        $existingSeats = $zone->seats()->get();
+        $existingGroups = $existingSeats->groupBy('row_label')->sortKeys();
+        $existingRows = $existingGroups->count();
+        $existingCols = 0;
+        foreach ($existingGroups as $rowSeats) {
+            $existingCols = max($existingCols, $rowSeats->count());
+        }
+
+        // Se l'utente non specifica nuove righe/colonne, usiamo quelle esistenti
+        if (!$newRows) {
+            $newRows = $existingRows;
+        }
+        if (!$newCols) {
+            $newCols = $existingCols;
+        }
+
+        if ($newRows && $newCols) {
+            $newRows = (int) $newRows;
+            $newCols = (int) $newCols;
+
+            // Controlliamo se cambia la geometria o solo le etichette
+            $labelsChanged = ($zone->start_row_alpha ?: ord('A')) !== $oldStartRowAlpha
+                || ($zone->start_col_num ?: 1) !== $oldStartColNum;
+
+            if ($existingRows !== $newRows || $existingCols !== $newCols || $labelsChanged) {
+                $seatIds = $existingSeats->pluck('id');
+                $hasAttendees = \App\Models\Attendee::whereIn('seat_id', $seatIds)->exists();
+                if ($hasAttendees) {
+                    return redirect()->route('showEventCustomizeTab', [
+                        'event_id' => $event_id,
+                        'tab'      => 'seat_map',
+                    ])->withErrors(['seats' => 'Non puoi modificare file/colonne: alcuni posti di questa zona sono già assegnati a ordini.']);
+                }
+
+                // Nessun posto assegnato: cancelliamo e rigeneriamo
+                $zone->seats()->delete();
+
+                // Usa i valori (eventualmente aggiornati) per le etichette
+                $startRowAlpha = $zone->start_row_alpha ?: ord('A');
+                $startColNumber = $zone->start_col_num ?: 1;
+
+                $seats = [];
+                for ($r = 0; $r < $newRows; $r++) {
+                    $rowLabel = chr($startRowAlpha + $r);
+                    for ($c = 1; $c <= $newCols; $c++) {
+                        $seats[] = [
+                            'seat_zone_id' => $zone->id,
+                            'row_label'    => $rowLabel,
+                            'seat_number'  => (string) ($startColNumber + $c - 1),
+                            'x'            => $c,
+                            'y'            => $r + 1,
+                            'status'       => 'free',
+                            'price_override' => null,
+                            'created_at'   => now(),
+                            'updated_at'   => now(),
+                        ];
+                    }
+                }
+
+                if (!empty($seats)) {
+                    Seat::insert($seats);
+                }
+            }
+        }
+
+        return redirect()->route('showEventCustomizeTab', [
+            'event_id' => $event_id,
+            'tab'      => 'seat_map',
+        ])->with('message', 'Zona aggiornata correttamente.');
+    }
+
+    /**
+     * Cancella una zona se non ci sono posti già assegnati a partecipanti.
+     *
+     * @param  Request  $request
+     * @param  int  $event_id
+     * @param  int  $zone_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postDeleteSeatZone(Request $request, $event_id, $zone_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+
+        if (!$event->seatMaps()->exists()) {
+            return response()->json([
+                'status'  => 'error',
+                'messages' => ['seat_map' => ['Piantina non trovata per questo evento.']],
+            ]);
+        }
+
+        $seatMap = $event->seatMaps()->first();
+        /** @var SeatZone|null $zone */
+        $zone = $seatMap->zones()->with('seats')->where('id', $zone_id)->first();
+
+        if (!$zone) {
+            return response()->json([
+                'status'  => 'error',
+                'messages' => ['zone' => ['Zona non trovata.']],
+            ]);
+        }
+
+        $seatIds = $zone->seats->pluck('id')->all();
+
+        if (!empty($seatIds)) {
+            $hasAssignedAttendees = Attendee::whereIn('seat_id', $seatIds)->exists();
+            if ($hasAssignedAttendees) {
+                return response()->json([
+                    'status'  => 'error',
+                    'messages' => ['zone' => ['Non puoi cancellare una zona che contiene posti già assegnati a ordini.']],
+                ]);
+            }
+        }
+
+        // Cancella prima i posti, poi la zona
+        $zone->seats()->delete();
+        $zone->delete();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Zona cancellata correttamente.',
+            'runThis' => 'window.location.reload();',
         ]);
     }
 }

@@ -67,13 +67,13 @@
             <div class="row">
 
                 @if($order_requires_payment)
-                @include('Public.ViewEvent.Partials.OfflinePayments')
+                    @include('Public.ViewEvent.Partials.OfflinePayments')
                 @endif
                 @if($order_requires_payment && $payment_gateway && View::exists($payment_gateway['checkout_blade_template']))
-                @include($payment_gateway['checkout_blade_template'])
+                    @include($payment_gateway['checkout_blade_template'])
                 @endif
                 @if(!$order_requires_payment)
-                @include('Public.ViewEvent.Partials.PaymentFree')
+                    @include('Public.ViewEvent.Partials.PaymentFree')
                 @endif
 
 

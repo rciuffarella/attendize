@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use App\Models\Seat;
 
 /**
  * @property bool is_cancelled
@@ -26,6 +27,7 @@ class Attendee extends MyBaseModel
         'event_id',
         'order_id',
         'ticket_id',
+        'seat_id',
         'account_id',
         'reference',
         'has_arrived',
@@ -88,6 +90,16 @@ class Attendee extends MyBaseModel
     }
 
     /**
+     * Posto assegnato all'attendee (se presente).
+     *
+     * @return BelongsTo
+     */
+    public function seat(): BelongsTo
+    {
+        return $this->belongsTo(Seat::class);
+    }
+
+    /**
      * The event associated with the attendee.
      *
      * @return BelongsTo
@@ -141,6 +153,33 @@ class Attendee extends MyBaseModel
     public function getFullNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    /**
+     * Etichetta leggibile del posto assegnato (es. "Fila A, Posto 12").
+     *
+     * @return string|null
+     */
+    public function getSeatLabelAttribute(): ?string
+    {
+        if (!$this->seat) {
+            return null;
+        }
+
+        $row = $this->seat->row_label;
+        $num = $this->seat->seat_number;
+
+        if ($row && $num) {
+            return 'Fila ' . $row . ', Posto ' . $num;
+        }
+        if ($row) {
+            return 'Fila ' . $row;
+        }
+        if ($num) {
+            return 'Posto ' . $num;
+        }
+
+        return null;
     }
 
 

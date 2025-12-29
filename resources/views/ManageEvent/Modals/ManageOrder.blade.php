@@ -206,7 +206,14 @@
                                     </td>
                                     <td>
                                         {{{$attendee->ticket->title}}}
-                                        {{{$order->order_reference}}}-{{{$attendee->reference_index}}}
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $attendee->seat_label ?: 'Posto non assegnato' }}
+                                        </small>
+                                        <br>
+                                        <small>
+                                            {{ $order->order_reference }}-{{ $attendee->reference_index }}
+                                        </small>
                                     </td>
                                 </tr>
                             @endforeach

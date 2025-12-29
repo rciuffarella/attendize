@@ -336,6 +336,13 @@ Route::group(
             )->name('MakeEventLive');
 
             /*
+             * Duplica evento
+             */
+            Route::post('{event_id}/duplicate',
+                [EventController::class, 'postDuplicateEvent']
+            )->name('postDuplicateEvent');
+
+            /*
              * -------
              * Tickets
              * -------
@@ -543,6 +550,22 @@ Route::group(
             Route::post('{event_id}/customize/fees',
                 [EventCustomizeController::class, 'postEditEventFees']
             )->name('postEditEventFees');
+
+            Route::post('{event_id}/customize/seat_map',
+                [EventCustomizeController::class, 'postEditEventSeatMap']
+            )->name('postEditEventSeatMap');
+
+            Route::post('{event_id}/customize/seat_map/zone',
+                [EventCustomizeController::class, 'postCreateSeatZone']
+            )->name('postCreateSeatZone');
+
+            Route::post('{event_id}/customize/seat_map/zone/{zone_id}',
+                [EventCustomizeController::class, 'postUpdateSeatZone']
+            )->name('postUpdateSeatZone');
+
+            Route::post('{event_id}/customize/seat_map/zone/{zone_id}/delete',
+                [EventCustomizeController::class, 'postDeleteSeatZone']
+            )->name('postDeleteSeatZone');
 
             /*
              * -------

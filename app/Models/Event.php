@@ -473,6 +473,16 @@ ICSTemplate;
     }
 
     /**
+     * Seat map associated with the event (posti numerati).
+     *
+     * @return HasMany
+     */
+    public function seatMaps()
+    {
+        return $this->hasMany(SeatMap::class);
+    }
+
+    /**
      * Calculates the event organiser fee from both the fixed and percentage values based on the ticket
      * price
      *
