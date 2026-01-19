@@ -83,6 +83,63 @@ class EventViewController extends Controller
     }
 
     /**
+     * Get occupied seats for a specific event date
+     *
+     * @param Request $request
+     * @param $event_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getOccupiedSeats(Request $request, $event_id)
+    {
+        try {
+            $event = Event::findOrFail($event_id);
+            $eventDateId = $request->get('event_date_id');
+
+            if (!$eventDateId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Data non specificata',
+                ], 400);
+            }
+
+            // Recupera i posti occupati per questa data specifica
+            // Prima verifichiamo se ci sono ordini con questa data
+            $ordersWithDate = \App\Models\Order::where('event_id', $event->id)
+                ->where('event_date_id', $eventDateId)
+                ->pluck('id')
+                ->toArray();
+            
+            $occupiedSeatIds = [];
+            if (!empty($ordersWithDate)) {
+                $occupiedSeatIds = \App\Models\Attendee::where('event_id', $event->id)
+                    ->whereNotNull('seat_id')
+                    ->whereIn('order_id', $ordersWithDate)
+                    ->pluck('seat_id')
+                    ->map(function($id) {
+                        return (int)$id; // Assicura che siano interi
+                    })
+                    ->values() // Re-indicizza l'array
+                    ->toArray();
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'occupied_seats' => $occupiedSeatIds,
+            ], 200, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (\Exception $e) {
+            \Log::error('Error in getOccupiedSeats: ' . $e->getMessage() . ' - Stack: ' . $e->getTraceAsString());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Errore nel recupero dei posti occupati: ' . $e->getMessage(),
+            ], 500, [
+                'Content-Type' => 'application/json; charset=utf-8'
+            ]);
+        }
+    }
+
+    /**
      * Show preview of event homepage / used for backend previewing
      *
      * @param $event_id

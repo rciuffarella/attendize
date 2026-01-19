@@ -79,7 +79,7 @@ class EventOrdersController extends MyBaseController
      */
     public function manageOrder(Request $request, $order_id)
     {
-        $order = Order::scope()->find($order_id);
+        $order = Order::scope()->with('eventDate')->find($order_id);
 
         $orderService = new OrderService($order->amount, $order->booking_fee, $order->event);
         $orderService->calculateFinalCosts();

@@ -6,6 +6,7 @@ use App\Attendize\PaymentUtils;
 use App\Jobs\SendOrderNotificationJob;
 use App\Jobs\SendOrderConfirmationJob;
 use App\Jobs\SendOrderAttendeeTicketJob;
+use App\Jobs\GenerateTicketsJob;
 use App\Models\Account;
 use App\Models\AccountPaymentGateway;
 use App\Models\Affiliate;
@@ -220,7 +221,12 @@ class EventCheckoutController extends Controller
             'payment_gateway'         => $paymentGateway,
             // IDs dei posti selezionati sulla mappa (es: "TICKETID:SEATID,TICKETID:SEATID")
             'selected_seat_ids'       => $request->get('selected_seat_ids', ''),
+            // ID della data/orario selezionata (converti a null se vuoto)
+            'event_date_id'           => $request->get('event_date_id') ? (int)$request->get('event_date_id') : null,
         ]);
+        
+        // Log per debug
+        Log::debug('postValidateTicketsOrder - event_date_id salvato in sessione: ' . ($request->get('event_date_id') ?: 'null'));
 
         /*
          * If we're this far assume everything is OK and redirect them
@@ -262,7 +268,10 @@ class EventCheckoutController extends Controller
 
         $event = Event::findorFail($order_session['event_id']);
 
-        $orderService = new OrderService($order_session['order_total'], $order_session['total_booking_fee'], $event);
+        $order_total = $order_session['order_total'] ?? 0;
+        $total_booking_fee = $order_session['total_booking_fee'] ?? 0;
+        
+        $orderService = new OrderService($order_total, $total_booking_fee, $event);
         $orderService->calculateFinalCosts();
 
         $data = $order_session + [
@@ -352,21 +361,30 @@ class EventCheckoutController extends Controller
     public function showEventPayment(Request $request, $event_id)
     {
         $order_session = session()->get('ticket_order_' . $event_id);
+        
+        if (!$order_session) {
+            return redirect()->route('showEventPage', ['event_id' => $event_id])
+                ->with('message', 'Sessione scaduta. Si prega di ricominciare.');
+        }
+        
         $event = Event::findOrFail($event_id);
 
-        $payment_gateway = $order_session['payment_gateway'];
-        $order_total = $order_session['order_total'];
-        $account_payment_gateway = $order_session['account_payment_gateway'];
+        $payment_gateway = $order_session['payment_gateway'] ?? null;
+        $order_total = $order_session['order_total'] ?? 0;
+        $account_payment_gateway = $order_session['account_payment_gateway'] ?? null;
+        $total_booking_fee = $order_session['total_booking_fee'] ?? 0;
 
-        $orderService = new OrderService($order_session['order_total'], $order_session['total_booking_fee'], $event);
+        $orderService = new OrderService($order_session['order_total'] ?? 0, $total_booking_fee, $event);
         $orderService->calculateFinalCosts();
 
         $payment_failed = $request->get('is_payment_failed') ? 1 : 0;
 
-        $secondsToExpire = Carbon::now()->diffInSeconds($order_session['expires']);
+        $expires = $order_session['expires'] ?? Carbon::now()->addMinutes(15);
+        $secondsToExpire = Carbon::now()->diffInSeconds($expires);
+        $tickets = $order_session['tickets'] ?? [];
 
         $viewData = ['event' => $event,
-                     'tickets' => $order_session['tickets'],
+                     'tickets' => $tickets,
                      'order_total' => $order_total,
                      'orderService' => $orderService,
                      'order_requires_payment'  => PaymentUtils::requiresPayment($order_total),
@@ -398,9 +416,16 @@ class EventCheckoutController extends Controller
 
         $ticket_order = session()->get('ticket_order_' . $event_id);
 
+        if (!$ticket_order) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Sessione scaduta. Si prega di ricominciare.',
+            ]);
+        }
+
         $event = Event::findOrFail($event_id);
 
-        $order_requires_payment = $ticket_order['order_requires_payment'];
+        $order_requires_payment = isset($ticket_order['order_requires_payment']) ? $ticket_order['order_requires_payment'] : false;
 
         if ($order_requires_payment && $request->get('pay_offline') && $event->enable_offline_payments) {
             return $this->completeOrder($event_id);
@@ -415,10 +440,25 @@ class EventCheckoutController extends Controller
             $order_service = new OrderService($ticket_order['order_total'], $ticket_order['total_booking_fee'], $event);
             $order_service->calculateFinalCosts();
 
+            if (!isset($ticket_order['account_payment_gateway']) || !$ticket_order['account_payment_gateway']) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Gateway di pagamento account non configurato.',
+                ]);
+            }
+
+            if (!isset($ticket_order['payment_gateway']) || !$ticket_order['payment_gateway']) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Gateway di pagamento non configurato.',
+                ]);
+            }
+
             $payment_gateway_config = $ticket_order['account_payment_gateway']->config + [
                                                     'testMode' => config('attendize.enable_test_payments')];
 
             $payment_gateway_factory = new PaymentGatewayFactory();
+
             $gateway = $payment_gateway_factory->create($ticket_order['payment_gateway']->name, $payment_gateway_config);
             //certain payment gateways require an extra parameter here and there so this method takes care of that
             //and sets certain options for the gateway that can be used when the transaction is started
@@ -473,15 +513,24 @@ class EventCheckoutController extends Controller
                     'message' => $response->getMessage(),
                 ]);
             }
-        } catch (\Exeption $e) {
-            Log::error($e);
+        } catch (\Exception $e) {
+            Log::error('Errore in postCreateOrder: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             $error = 'Sorry, there was an error processing your payment. Please try again.';
-        }
-
-        if ($error) {
+            
+            // In modalità debug, mostra più dettagli
+            if (config('app.debug')) {
+                $error .= ' Debug: ' . $e->getMessage();
+            }
+            
             return response()->json([
                 'status'  => 'error',
                 'message' => $error,
+                'debug'   => config('app.debug') ? [
+                    'error' => $e->getMessage(),
+                    'file'  => $e->getFile(),
+                    'line'  => $e->getLine(),
+                ] : null
             ]);
         }
 
@@ -500,13 +549,30 @@ class EventCheckoutController extends Controller
 
         $ticket_order = session()->get('ticket_order_' . $event_id);
 
+        if (!$ticket_order) {
+            return redirect()->route('showEventPage', ['event_id' => $event_id])
+                ->with('message', 'Sessione scaduta. Si prega di ricominciare.');
+        }
+
+        if (!isset($ticket_order['account_payment_gateway']) || !$ticket_order['account_payment_gateway']) {
+            return redirect()->route('showEventPage', ['event_id' => $event_id])
+                ->with('message', 'Gateway di pagamento account non configurato.');
+        }
+
+        if (!isset($ticket_order['payment_gateway']) || !$ticket_order['payment_gateway']) {
+            return redirect()->route('showEventPage', ['event_id' => $event_id])
+                ->with('message', 'Gateway di pagamento non configurato.');
+        }
+
         $payment_gateway_config = $ticket_order['account_payment_gateway']->config + [
                 'testMode' => config('attendize.enable_test_payments')];
 
         $payment_gateway_factory = new PaymentGatewayFactory();
         $gateway = $payment_gateway_factory->create($ticket_order['payment_gateway']->name, $payment_gateway_config);
         $gateway->extractRequestParameters($request);
-        $response = $gateway->completeTransaction($ticket_order['transaction_data'][0]);
+        
+        $transaction_data = isset($ticket_order['transaction_data'][0]) ? $ticket_order['transaction_data'][0] : [];
+        $response = $gateway->completeTransaction($transaction_data);
 
 
         if ($response->isSuccessful()) {
@@ -537,6 +603,22 @@ class EventCheckoutController extends Controller
 
             $order = new Order();
             $ticket_order = session()->get('ticket_order_' . $event_id);
+
+            if (!$ticket_order) {
+                DB::rollBack();
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Sessione scaduta. Si prega di ricominciare.',
+                ]);
+            }
+
+            if (!isset($ticket_order['request_data']) || !isset($ticket_order['request_data'][0])) {
+                DB::rollBack();
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Dati ordine non validi. Si prega di ricominciare.',
+                ]);
+            }
 
             $request_data = $ticket_order['request_data'][0];
             $event = Event::findOrFail($ticket_order['event_id']);
@@ -578,7 +660,34 @@ class EventCheckoutController extends Controller
                 $order->payment_intent = $ticket_order['transaction_data'][0]['payment_intent'];
             }
 
-            if ($ticket_order['order_requires_payment'] && !isset($request_data['pay_offline'])) {
+            // Salva l'event_date_id se presente
+            if (isset($ticket_order['event_date_id']) && !empty($ticket_order['event_date_id'])) {
+                $eventDateId = $ticket_order['event_date_id'];
+                // Converti a intero se è una stringa
+                $eventDateId = is_numeric($eventDateId) ? (int)$eventDateId : null;
+                
+                // Verifica che l'event_date_id esista e appartenga all'evento
+                if ($eventDateId) {
+                    $eventDate = \App\Models\EventDate::where('id', $eventDateId)
+                        ->where('event_id', $event->id)
+                        ->first();
+                    
+                    if ($eventDate) {
+                        $order->event_date_id = $eventDateId;
+                        Log::debug('completeOrder - event_date_id salvato nell\'ordine: ' . $order->event_date_id);
+                    } else {
+                        Log::warning('completeOrder - event_date_id non valido o non appartiene all\'evento: ' . $eventDateId);
+                        $order->event_date_id = null;
+                    }
+                } else {
+                    $order->event_date_id = null;
+                }
+            } else {
+                $order->event_date_id = null;
+                Log::debug('completeOrder - event_date_id non presente nella sessione, impostato a null');
+            }
+
+            if (isset($ticket_order['order_requires_payment']) && $ticket_order['order_requires_payment'] && !isset($request_data['pay_offline'])) {
                 $order->payment_gateway_id = $ticket_order['payment_gateway']->id;
             }
             $order->first_name = sanitise($request_data['order_first_name']);
@@ -640,7 +749,7 @@ class EventCheckoutController extends Controller
             ]);
             $event_stats->increment('tickets_sold', $ticket_order['total_ticket_quantity']);
 
-            if ($ticket_order['order_requires_payment']) {
+            if (isset($ticket_order['order_requires_payment']) && $ticket_order['order_requires_payment']) {
                 $event_stats->increment('sales_volume', $order->amount);
                 $event_stats->increment('organiser_fees_volume', $order->organiser_booking_fee);
             }
@@ -748,12 +857,14 @@ class EventCheckoutController extends Controller
             }
 
         } catch (Exception $e) {
-            Log::error($e);
+            Log::error('Errore in completeOrder: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             DB::rollBack();
 
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Whoops! There was a problem processing your order. Please try again.'
+                'message' => 'Whoops! There was a problem processing your order. Please try again.',
+                'debug'   => config('app.debug') ? $e->getMessage() : null
             ]);
 
         }
@@ -768,29 +879,68 @@ class EventCheckoutController extends Controller
         ReservedTickets::where('session_id', '=', session()->getId())->delete();
 
         // Queue up some tasks - Emails to be sent, PDFs etc.
-        // Send order notification to organizer
-        Log::debug('Queueing Order Notification Job');
-        SendOrderNotificationJob::dispatch($order, $orderService);
-        // Send order confirmation to ticket buyer
-        Log::debug('Queueing Order Tickets Job');
-        SendOrderConfirmationJob::dispatch($order, $orderService);
-        // Send tickets to attendees
-        Log::debug('Queueing Attendee Ticket Jobs');
-        foreach ($order->attendees as $attendee) {
-            SendOrderAttendeeTicketJob::dispatch($attendee);
-            Log::debug('Queueing Attendee Ticket Job Done');
+        // IMPORTANTE: Con QUEUE_CONNECTION=sync, i job vengono eseguiti immediatamente e possono causare timeout 504.
+        // Usiamo dispatchAfterResponse() per eseguire i job DOPO che la risposta HTTP è stata inviata al client,
+        // evitando così il timeout. I biglietti vengono generati all'interno dei job stessi.
+        
+        // Invia le email in modo asincrono (dopo la risposta) per evitare timeout
+        // SendOrderConfirmationJob genera anche i biglietti, quindi non serve chiamarlo separatamente
+        try {
+            Log::debug('Queueing Order Notification Job (after response)');
+            SendOrderNotificationJob::dispatchAfterResponse($order, $orderService);
+        } catch (\Throwable $e) {
+            Log::warning('Errore nel dispatch della notifica ordine (non bloccante): ' . $e->getMessage());
+        }
+        
+        try {
+            Log::debug('Queueing Order Confirmation Job (after response)');
+            // SendOrderConfirmationJob genera i biglietti e invia l'email di conferma
+            SendOrderConfirmationJob::dispatchAfterResponse($order, $orderService);
+        } catch (\Throwable $e) {
+            Log::warning('Errore nel dispatch della conferma ordine (non bloccante): ' . $e->getMessage());
+        }
+        
+        try {
+            Log::debug('Queueing Attendee Ticket Jobs (after response)');
+            foreach ($order->attendees as $attendee) {
+                try {
+                    // SendOrderAttendeeTicketJob genera il biglietto per l'attendee e invia l'email
+                    SendOrderAttendeeTicketJob::dispatchAfterResponse($attendee);
+                    Log::debug('Queueing Attendee Ticket Job Done');
+                } catch (\Throwable $e) {
+                    Log::warning('Errore nel dispatch del biglietto all\'attendee ' . $attendee->id . ' (non bloccante): ' . $e->getMessage());
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Errore generale nell\'invio dei biglietti agli attendees (non bloccante): ' . $e->getMessage());
         }
 
+        // Log per debug
+        Log::debug('completeOrder - Ordine completato con successo. Order ID: ' . $order->id . ', Reference: ' . $order->order_reference);
+        
         if ($return_json) {
-            return response()->json([
-                'status'      => 'success',
-                'redirectUrl' => route('showOrderDetails', [
-                    'is_embedded'     => $this->is_embedded,
-                    'order_reference' => $order->order_reference,
-                ]),
+            $redirectUrl = route('showOrderDetails', [
+                'is_embedded'     => $this->is_embedded,
+                'order_reference' => $order->order_reference,
             ]);
+            
+            $responseData = [
+                'status'      => 'success',
+                'redirectUrl' => $redirectUrl,
+            ];
+            
+            Log::debug('completeOrder - Restituisco risposta JSON di successo. Redirect URL: ' . $redirectUrl);
+            Log::debug('completeOrder - Response data: ' . json_encode($responseData));
+            
+            $response = response()->json($responseData, 200);
+            
+            // Aggiungi header per assicurarsi che la risposta sia JSON
+            $response->header('Content-Type', 'application/json');
+            
+            return $response;
         }
 
+        Log::debug('completeOrder - Restituisco redirect');
         return response()->redirectToRoute('showOrderDetails', [
             'is_embedded'     => $this->is_embedded,
             'order_reference' => $order->order_reference,
@@ -808,7 +958,7 @@ class EventCheckoutController extends Controller
      */
     public function showOrderDetails(Request $request, $order_reference)
     {
-        $order = Order::where('order_reference', '=', $order_reference)->first();
+        $order = Order::with('eventDate')->where('order_reference', '=', $order_reference)->first();
 
         if (!$order) {
             abort(404);
@@ -841,7 +991,7 @@ class EventCheckoutController extends Controller
      */
     public function showOrderTickets(Request $request, $order_reference)
     {
-        $order = Order::where('order_reference', '=', $order_reference)->first();
+        $order = Order::with('eventDate')->where('order_reference', '=', $order_reference)->first();
 
         if (!$order) {
             abort(404);

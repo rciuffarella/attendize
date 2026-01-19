@@ -1,0 +1,1 @@
+docker-compose exec web sh -c "tail -f storage/logs/laravel-2026-01-19.log"

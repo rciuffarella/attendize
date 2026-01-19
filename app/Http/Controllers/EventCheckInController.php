@@ -78,7 +78,13 @@ class EventCheckInController extends MyBaseController
                 'attendees.has_arrived',
                 'tickets.title as ticket',
                 'orders.order_reference',
-                'orders.is_payment_received'
+                'orders.is_payment_received',
+                'orders.event_date_id'
+            ])
+            ->leftJoin('event_dates', 'event_dates.id', '=', 'orders.event_date_id')
+            ->addSelect([
+                'event_dates.start_date as event_date_start',
+                'event_dates.end_date as event_date_end'
             ])
             ->orderBy('attendees.first_name', 'ASC')
             ->get();

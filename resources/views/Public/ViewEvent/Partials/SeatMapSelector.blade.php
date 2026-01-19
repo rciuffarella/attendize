@@ -1,11 +1,30 @@
 @if($event->is_seated && $event->seatMaps->count())
     @php
         $seatMap = $event->seatMaps->first();
+        // Recupera l'event_date_id selezionato (se presente)
+        // Prima controlla se c'è una data selezionata nella richiesta, poi nella variabile passata
+        $selectedEventDateId = request()->get('event_date_id') ?: (isset($event_date_id) ? $event_date_id : null);
+        
         // Recupera i posti già assegnati a partecipanti per questo evento
-        $assignedSeatIds = \App\Models\Attendee::where('event_id', $event->id)
-            ->whereNotNull('seat_id')
-            ->pluck('seat_id')
-            ->toArray();
+        // Se c'è una data selezionata, filtra solo per quella data
+        // Altrimenti mostra solo i posti occupati per eventi senza date multiple (retrocompatibilità)
+        $assignedSeatIdsQuery = \App\Models\Attendee::where('event_id', $event->id)
+            ->whereNotNull('seat_id');
+        
+        if ($selectedEventDateId) {
+            // Filtra per la data selezionata
+            $assignedSeatIdsQuery->whereHas('order', function($query) use ($selectedEventDateId) {
+                $query->where('event_date_id', $selectedEventDateId);
+            });
+        } else {
+            // Se non c'è data selezionata, mostra solo posti occupati per ordini senza event_date_id
+            // (eventi vecchi senza sistema multi-data)
+            $assignedSeatIdsQuery->whereHas('order', function($query) {
+                $query->whereNull('event_date_id');
+            });
+        }
+        
+        $assignedSeatIds = $assignedSeatIdsQuery->pluck('seat_id')->toArray();
     @endphp
     <div class="panel panel-default" style="margin-bottom: 20px;">
         <div class="panel-heading">
@@ -13,7 +32,7 @@
                 Seleziona i posti (piantina sperimentale)
             </h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body seat-map-container">
             @if($seatMap->zones->count())
                 <p class="help-block">
                     Clicca sui posti disponibili per selezionarli. I posti selezionati verranno aggiunti automaticamente al riepilogo dei biglietti.
@@ -84,6 +103,8 @@
                                                     data-seat-id="{{ $seat->id }}"
                                                     data-ticket-id="{{ $zone->ticket_id }}"
                                                     data-zone-color="{{ $zone->color ?: '#2563eb' }}"
+                                                    data-seat-taken="{{ $isTaken ? '1' : '0' }}"
+                                                    data-seat-number="{{ $seat->seat_number }}"
                                                     {{ $isTaken ? 'disabled' : '' }}>
                                                 @if($isTaken)
                                                     ✕

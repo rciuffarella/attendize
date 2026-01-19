@@ -563,6 +563,22 @@ Route::group(
                 [EventCustomizeController::class, 'postUpdateSeatZone']
             )->name('postUpdateSeatZone');
 
+            Route::post('{event_id}/customize/dates',
+                [EventCustomizeController::class, 'postCreateEventDate']
+            )->name('postCreateEventDate');
+
+            Route::get('{event_id}/customize/dates/{date_id}',
+                [EventCustomizeController::class, 'getEventDate']
+            )->name('getEventDate');
+
+            Route::post('{event_id}/customize/dates/{date_id}',
+                [EventCustomizeController::class, 'postUpdateEventDate']
+            )->name('postUpdateEventDate');
+
+            Route::post('{event_id}/customize/dates/{date_id}/delete',
+                [EventCustomizeController::class, 'postDeleteEventDate']
+            )->name('postDeleteEventDate');
+
             Route::post('{event_id}/customize/seat_map/zone/{zone_id}/delete',
                 [EventCustomizeController::class, 'postDeleteSeatZone']
             )->name('postDeleteSeatZone');

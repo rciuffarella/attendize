@@ -22,3 +22,5 @@ class AddPositionToSeatZonesTable extends Migration
 }
 
 
+
+

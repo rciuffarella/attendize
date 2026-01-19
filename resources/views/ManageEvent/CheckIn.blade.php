@@ -95,6 +95,13 @@
                             @lang("Order.reference"): <b>@{{ attendee.order_reference + '-' + attendee.reference_index }}</b>
                         <br>
                             @lang("Order.ticket"): <b>@{{ attendee.ticket }}</b>
+                        <br v-if="attendee.event_date_start">
+                            <span v-if="attendee.event_date_start" style="color: #666; font-size: 0.9em;">
+                                Data evento: <b>@{{ formatDate(attendee.event_date_start) }}</b>
+                                <span v-if="attendee.event_date_end && attendee.event_date_end != attendee.event_date_start">
+                                    - @{{ formatDate(attendee.event_date_end) }}
+                                </span>
+                            </span>
                         <a href="" class="ci btn btn-successfulQrRead">
                             <i class="ico-checkmark"></i>
                         </a>

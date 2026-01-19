@@ -103,6 +103,29 @@ class Event extends MyBaseModel
     }
 
     /**
+     * The event dates associated with the event.
+     *
+     * @return HasMany
+     */
+    public function eventDates()
+    {
+        return $this->hasMany(EventDate::class)->orderBy('start_date', 'asc');
+    }
+
+    /**
+     * Get active event dates (not past, is_active = true)
+     *
+     * @return HasMany
+     */
+    public function activeEventDates()
+    {
+        return $this->hasMany(EventDate::class)
+            ->where('is_active', true)
+            ->where('end_date', '>=', now())
+            ->orderBy('start_date', 'asc');
+    }
+
+    /**
      * The affiliates associated with the event.
      *
      * @return HasMany
@@ -503,5 +526,65 @@ ICSTemplate;
         $calculatedBookingFee = $calculatedBookingFee->add($percentageFeeValue);
 
         return $calculatedBookingFee;
+    }
+
+    /**
+     * Determina la categoria dell'evento in base al titolo e alla descrizione
+     *
+     * @return string|null
+     */
+    public function determineCategory()
+    {
+        if (!empty($this->category)) {
+            return $this->category;
+        }
+
+        $text = strtolower($this->title . ' ' . $this->description);
+        
+        // Parole chiave per ogni categoria
+        $categoryKeywords = [
+            'Turismo' => ['tour', 'visita', 'escursione', 'gita', 'attrazione', 'monumento', 'piazza', 'chiesa', 'museo', 'palazzo', 'villa', 'castello', 'sotterraneo', 'catacombe'],
+            'Cultura' => ['mostra', 'esposizione', 'galleria', 'museo', 'arte', 'pittura', 'scultura', 'collezione', 'cultura'],
+            'Spettacoli' => ['teatro', 'spettacolo', 'opera', 'danza', 'balletto', 'recita', 'commedia', 'dramma'],
+            'Eventi musicali' => ['concerto', 'musica', 'live', 'gospel', 'jazz', 'rock', 'pop', 'classica', 'sinfonica', 'orchestra', 'candlelight', 'piano', 'violino'],
+            'Cibo & Drink' => ['cena', 'degustazione', 'vino', 'ristorante', 'cucina', 'pasta', 'pizza', 'tiramisù', 'gelato', 'food', 'drink', 'aperitivo'],
+            'Sport' => ['sport', 'calcio', 'basket', 'tennis', 'maratona', 'corsa', 'gara', 'competizione', 'torneo']
+        ];
+
+        // Conta le occorrenze per ogni categoria
+        $scores = [];
+        foreach ($categoryKeywords as $category => $keywords) {
+            $score = 0;
+            foreach ($keywords as $keyword) {
+                if (strpos($text, $keyword) !== false) {
+                    $score++;
+                }
+            }
+            if ($score > 0) {
+                $scores[$category] = $score;
+            }
+        }
+
+        // Restituisce la categoria con il punteggio più alto
+        if (!empty($scores)) {
+            arsort($scores);
+            return array_key_first($scores);
+        }
+
+        // Default: Spettacoli se non trova nulla
+        return 'Spettacoli';
+    }
+
+    /**
+     * Assegna automaticamente la categoria se non presente
+     *
+     * @return void
+     */
+    public function assignCategoryIfMissing()
+    {
+        if (empty($this->category)) {
+            $this->category = $this->determineCategory();
+            $this->save();
+        }
     }
 }

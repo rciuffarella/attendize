@@ -300,6 +300,8 @@
                     class="{{$tab == 'ticket_design' ? 'active' : ''}}"><a href="#ticket_design" data-toggle="tab">@lang("basic.ticket_design")</a></li>
                 <li data-route="{{route('showEventCustomizeTab', ['event_id' => $event->id, 'tab' => 'seat_map'])}}"
                     class="{{$tab == 'seat_map' ? 'active' : ''}}"><a href="#seat_map" data-toggle="tab">@lang("basic.seat_map")</a></li>
+                <li data-route="{{route('showEventCustomizeTab', ['event_id' => $event->id, 'tab' => 'dates'])}}"
+                    class="{{$tab == 'dates' ? 'active' : ''}}"><a href="#dates" data-toggle="tab">Date e orari</a></li>
             </ul>
             <!--/ tab -->
             <!-- tab content -->
@@ -1010,6 +1012,10 @@
                             Suggerimento: trascina i riquadri colorati per posizionarli; poi usa <strong>“Salva modifiche zona”</strong> per applicare le nuove coordinate.
                         </p>
                     @endif
+                </div>
+
+                <div class="tab-pane {{$tab == 'dates' ? 'active' : ''}}" id="dates">
+                    @include('ManageEvent.Partials.EventDates', ['event' => $event])
                 </div>
             <!--/ tab content -->
         </div>

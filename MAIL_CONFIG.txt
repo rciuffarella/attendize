@@ -1,0 +1,24 @@
+CONFIGURAZIONE EMAIL - Istruzioni per modificare il file .env
+
+Il file .env è corrotto. Ecco le variabili MAIL da aggiungere/correggere:
+
+# Mail Configuration
+MAIL_DRIVER=smtp
+MAIL_HOST=mail.cercaclick.it
+MAIL_PORT=587
+MAIL_USERNAME=eventi@fondazioneboccadamo.org
+MAIL_PASSWORD=AAAbbb123@2025
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=eventi@fondazioneboccadamo.org
+MAIL_FROM_NAME="Fondazione Boccadamo"
+
+IMPORTANTE:
+1. Rimuovi tutte le righe che iniziano con MAIL_ dal file .env
+2. Rimuovi le righe duplicate di MAIL_FROM_ADDRESS e MAIL_FROM_NAME
+3. Aggiungi le righe sopra alla fine del file .env
+4. Cambia MAIL_PORT da 25 a 587 (porta standard per TLS)
+5. Cambia MAIL_ENCRYPTION da "null" a "tls"
+
+Se il server mail.cercaclick.it non supporta la porta 587, prova:
+- MAIL_PORT=465 con MAIL_ENCRYPTION=ssl
+- Oppure MAIL_PORT=25 con MAIL_ENCRYPTION= (vuoto, senza TLS)

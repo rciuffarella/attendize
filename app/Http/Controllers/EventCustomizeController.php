@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendee;
 use App\Models\Event;
+use App\Models\EventDate;
 use App\Models\Seat;
 use App\Models\SeatMap;
 use App\Models\SeatZone;
@@ -26,7 +27,7 @@ class EventCustomizeController extends MyBaseController
      */
     public function getEventViewData($event_id, $additional_data = [])
     {
-        $event = Event::scope()->findOrFail($event_id);
+        $event = Event::scope()->with(['eventDates', 'organiser', 'images'])->findOrFail($event_id);
 
         $image_path = $event->organiser->full_logo_path;
         if ($event->images->first() != null) {
@@ -696,6 +697,176 @@ class EventCustomizeController extends MyBaseController
         return response()->json([
             'status'  => 'success',
             'message' => 'Zona cancellata correttamente.',
+            'runThis' => 'window.location.reload();',
+        ]);
+    }
+
+    /**
+     * Create a new event date
+     *
+     * @param Request $request
+     * @param $event_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postCreateEventDate(Request $request, $event_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'quantity_available' => 'nullable|integer|min:1',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'messages' => $validator->messages()->toArray(),
+            ]);
+        }
+
+        try {
+            // Converti le date dal formato del datepicker (Y-m-d H:i) a Carbon
+            $dateFormat = config('attendize.default_datetime_format', 'Y-m-d H:i');
+            $startDate = \Carbon\Carbon::createFromFormat($dateFormat, $request->get('start_date'));
+            $endDate = \Carbon\Carbon::createFromFormat($dateFormat, $request->get('end_date'));
+            
+            $eventDate = new EventDate();
+            $eventDate->event_id = $event->id;
+            $eventDate->start_date = $startDate;
+            $eventDate->end_date = $endDate;
+            $quantityAvailable = $request->get('quantity_available');
+            $eventDate->quantity_available = !empty($quantityAvailable) ? (int)$quantityAvailable : null;
+            $isActive = $request->get('is_active');
+            $eventDate->is_active = isset($isActive) ? (bool)$isActive : true;
+            
+            // Calcola sort_order
+            $maxSortOrder = $event->eventDates()->max('sort_order');
+            $eventDate->sort_order = $maxSortOrder ? $maxSortOrder + 1 : 1;
+            
+            $eventDate->save();
+        } catch (\Exception $e) {
+            \Log::error('Error creating event date: ' . $e->getMessage() . ' - Stack: ' . $e->getTraceAsString());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Errore nel salvataggio: ' . $e->getMessage(),
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data aggiunta correttamente.',
+            'runThis' => 'window.location.reload();',
+        ]);
+    }
+
+    /**
+     * Get event date data
+     *
+     * @param Request $request
+     * @param $event_id
+     * @param $date_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEventDate(Request $request, $event_id, $date_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+        $eventDate = EventDate::where('event_id', $event->id)->findOrFail($date_id);
+
+        return response()->json([
+            'id' => $eventDate->id,
+            'start_date' => $eventDate->start_date->format('Y-m-d H:i'),
+            'start_date_formatted' => $eventDate->getFormattedStartDate(),
+            'end_date' => $eventDate->end_date->format('Y-m-d H:i'),
+            'end_date_formatted' => $eventDate->getFormattedEndDate(),
+            'quantity_available' => $eventDate->quantity_available,
+            'is_active' => $eventDate->is_active,
+        ]);
+    }
+
+    /**
+     * Update event date
+     *
+     * @param Request $request
+     * @param $event_id
+     * @param $date_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postUpdateEventDate(Request $request, $event_id, $date_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+        $eventDate = EventDate::where('event_id', $event->id)->findOrFail($date_id);
+
+        $validator = Validator::make($request->all(), [
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'quantity_available' => 'nullable|integer|min:1',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'messages' => $validator->messages()->toArray(),
+            ]);
+        }
+
+        try {
+            // Converti le date dal formato del datepicker (Y-m-d H:i) a Carbon
+            $dateFormat = config('attendize.default_datetime_format', 'Y-m-d H:i');
+            $startDate = \Carbon\Carbon::createFromFormat($dateFormat, $request->get('start_date'));
+            $endDate = \Carbon\Carbon::createFromFormat($dateFormat, $request->get('end_date'));
+            
+            $eventDate->start_date = $startDate;
+            $eventDate->end_date = $endDate;
+            $quantityAvailable = $request->get('quantity_available');
+            $eventDate->quantity_available = !empty($quantityAvailable) ? (int)$quantityAvailable : null;
+            $isActive = $request->get('is_active');
+            $eventDate->is_active = isset($isActive) ? (bool)$isActive : true;
+            $eventDate->save();
+        } catch (\Exception $e) {
+            \Log::error('Error updating event date: ' . $e->getMessage() . ' - Stack: ' . $e->getTraceAsString());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Errore nell\'aggiornamento: ' . $e->getMessage(),
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data aggiornata correttamente.',
+            'runThis' => 'window.location.reload();',
+        ]);
+    }
+
+    /**
+     * Delete event date
+     *
+     * @param Request $request
+     * @param $event_id
+     * @param $date_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postDeleteEventDate(Request $request, $event_id, $date_id)
+    {
+        $event = Event::scope()->findOrFail($event_id);
+        $eventDate = EventDate::where('event_id', $event->id)->findOrFail($date_id);
+
+        // Check if there are orders for this date
+        $ordersCount = $eventDate->orders()->count();
+        if ($ordersCount > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Impossibile eliminare: ci sono ' . $ordersCount . ' ordini associati a questa data.',
+            ]);
+        }
+
+        $eventDate->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data eliminata correttamente.',
             'runThis' => 'window.location.reload();',
         ]);
     }

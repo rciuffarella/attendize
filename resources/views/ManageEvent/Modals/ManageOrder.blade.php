@@ -70,6 +70,15 @@
                         <div class="col-sm-6 col-xs-6">
                             <b>@lang("Order.date")</b><br> {{$order->created_at->format(config('attendize.default_datetime_format'))}}
                         </div>
+                        @if($order->eventDate)
+                        <div class="col-sm-6 col-xs-6">
+                            <b>Data e orario evento</b><br> 
+                            {{$order->eventDate->getFormattedStartDate()}}
+                            @if($order->eventDate->end_date && $order->eventDate->end_date != $order->eventDate->start_date)
+                                - {{$order->eventDate->getFormattedEndDate()}}
+                            @endif
+                        </div>
+                        @endif
                         <div class="col-sm-6 col-xs-6">
                             <b>@lang("Order.email")</b><br> {{$order->email}}
                         </div>

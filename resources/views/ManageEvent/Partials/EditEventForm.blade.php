@@ -35,6 +35,20 @@
                                         ))  !!}
         </div>
 
+        <div class="form-group">
+            {!! Form::label('category', 'Categoria', array('class'=>'control-label')) !!}
+            {!! Form::select('category', [
+                '' => 'Seleziona categoria...',
+                'Turismo' => 'Turismo',
+                'Cultura' => 'Cultura',
+                'Spettacoli' => 'Spettacoli',
+                'Eventi musicali' => 'Eventi musicali',
+                'Cibo & Drink' => 'Cibo & Drink',
+                'Sport' => 'Sport',
+            ], old('category', $event->category), ['class' => 'form-control']) !!}
+            <small class="help-block">Seleziona la categoria dell'evento per facilitare la ricerca</small>
+        </div>
+
         <div class="form-group address-automatic" style="display:{{$event->location_is_manual ? 'none' : 'block'}};">
             {!! Form::label('name', trans("Event.venue_name"), array('class'=>'control-label required ')) !!}
             {!!  Form::text('venue_name_full', old('venue_name_full'),

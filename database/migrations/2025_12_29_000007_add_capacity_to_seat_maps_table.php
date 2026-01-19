@@ -32,3 +32,5 @@ class AddCapacityToSeatMapsTable extends Migration
 }
 
 
+
+

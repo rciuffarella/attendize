@@ -57,3 +57,12 @@ Route::resource('attendees', API\AttendeesApiController::class);
  * Check-In / Check-Out
  * ---------------
  */
+
+/*
+ * ---------------
+ * Event Occupied Seats
+ * ---------------
+ */
+Route::get('/events/{event_id}/occupied-seats',
+    [\App\Http\Controllers\EventViewController::class, 'getOccupiedSeats']
+)->name('api.getOccupiedSeats');

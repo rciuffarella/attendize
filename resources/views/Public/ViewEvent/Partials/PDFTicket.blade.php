@@ -73,10 +73,17 @@
                             {{$event->organiser->name}}
                                 <h4>@lang("Ticket.venue")</h4>
                             {{$event->venue_name}}
+                                @if($order->eventDate)
+                                <h4>@lang("Ticket.start_date_time")</h4>
+                                {{$order->eventDate->getFormattedStartDate()}}
+                                <h4>@lang("Ticket.end_date_time")</h4>
+                                {{$order->eventDate->getFormattedEndDate()}}
+                                @else
                                 <h4>@lang("Ticket.start_date_time")</h4>
                                 {{$event->startDateFormatted()}}
                                 <h4>@lang("Ticket.end_date_time")</h4>
                                 {{$event->endDateFormatted()}}
+                                @endif
                         </div>
 
                         <div class="attendee_details">

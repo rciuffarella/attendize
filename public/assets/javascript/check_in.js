@@ -26,6 +26,16 @@ var checkinApp = new Vue({
     },
 
     methods: {
+        formatDate: function(dateString) {
+            if (!dateString) return '';
+            var date = new Date(dateString);
+            var day = ('0' + date.getDate()).slice(-2);
+            var month = ('0' + (date.getMonth() + 1)).slice(-2);
+            var year = date.getFullYear();
+            var hours = ('0' + date.getHours()).slice(-2);
+            var minutes = ('0' + date.getMinutes()).slice(-2);
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
+        },
         fetchAttendees: function () {
             this.$http.post(Attendize.checkInSearchRoute, {q: this.searchTerm}).then(function (res) {
                 this.attendees = res.data;

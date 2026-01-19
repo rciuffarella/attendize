@@ -36,6 +36,7 @@ class Order extends MyBaseModel
         'amount',
         'account_id',
         'event_id',
+        'event_date_id',
         'taxamt',
     ];
 
@@ -84,6 +85,16 @@ class Order extends MyBaseModel
     public function account()
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * The event date associated with the order.
+     *
+     * @return BelongsTo
+     */
+    public function eventDate()
+    {
+        return $this->belongsTo(EventDate::class);
     }
 
     /**
