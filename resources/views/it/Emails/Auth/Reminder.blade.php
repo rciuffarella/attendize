@@ -6,6 +6,6 @@
         per resettare la tua password, compila questo form: {{ route('password.reset', ['token' => $token]) }}.
         <br><br><br>
         Grazie,<br>
-        Team Attendize
+        Team EventiOne
     </div>
 @stop

@@ -5,7 +5,7 @@
 
 return array (
   //==================================== Translations ====================================//
-  'attendize_register' => 'Bedankt voor het registreren bij Attendize',
+  'attendize_register' => 'Bedankt voor het registreren bij EventiOne',
   'invite_user' => ':name toegevoegd aan account :app.',
   'message_regarding_event' => 'Bericht naar aanleiding van: :event',
   'organiser_copy' => '[Organisator kopie]',

@@ -1,6 +1,6 @@
 <div class="well">
     <p>
-        La instalación puede tardar varios minutos en completarse. Una vez que hagas clic en '<b>Instalar Attendize</b>'
+        La instalación puede tardar varios minutos en completarse. Una vez que hagas clic en '<b>Instalar EventiOne</b>'
         los ajustes de configuración se escribirán en este archivo: <b>{{base_path('.env')}}</b>. Puedes cambiar
         manualmente estas configuraciones en el futuro editando este archivo.
     </p>
@@ -9,7 +9,7 @@
         hay errores en los archivos de registro compruebe también <b>otros archivos de registro en su servidor</b>.
     </p>
     <p>
-        Si usted está usando hosting compartido, por favor pregunte a su host si soporta los requisitos de Attendize
+        Si usted está usando hosting compartido, por favor pregunte a su host si soporta los requisitos de EventiOne
         antes de solicitar soporte.
     </p>
     <p>
@@ -22,6 +22,6 @@
     <p>
         Por favor, también <a style="text-decoration: underline;" target="_blank"
                               href="https://www.attendize.com/license.html">lea la licencia</a> antes de instalar
-        Attendize.
+        EventiOne.
     </p>
 </div>

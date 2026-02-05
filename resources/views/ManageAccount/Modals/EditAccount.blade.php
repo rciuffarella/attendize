@@ -149,7 +149,7 @@
                                     @elseif(is_array($version_info))
                                         @lang("ManageAccount.version_up_to_date", ["installed" => $version_info['installed']])
                                     @else
-                                        Error retrieving the latest Attendize version.
+                                        Error retrieving the latest EventiOne version.
                                     @endif
                                 </p>
                                 <h4>

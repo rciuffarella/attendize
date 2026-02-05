@@ -10,7 +10,7 @@
          /_/    \_\__|\__\___|_| |_|\__,_|_/___\___(_)___\___/|_| |_| |_|
 
         -->
-        <title>{{{$event->title}}} - Attendize.com</title>
+        <title>{{{$event->title}}} - EventiOne</title>
 
 
         <meta charset="utf-8" />
@@ -27,7 +27,7 @@
         <meta property="og:image" content="{{config('attendize.cdn_url_user_assets').'/'.$event->images->first()['image_path']}}" />
         @endif
         <meta property="og:description" content="{{{Str::words(md_to_str($event->description), 20)}}}" />
-        <meta property="og:site_name" content="Attendize.com" />
+        <meta property="og:site_name" content="EventiOne" />
         <!--[if lt IE 9]>
           <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
           <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
@@ -35,6 +35,7 @@
         @yield('head')
 
        {!!Html::style(config('attendize.cdn_url_static_assets').'/assets/stylesheet/frontend.css')!!}
+        {!! Html::style(asset('assets/stylesheet/customfrontend.css')) !!}
 
         <!--Bootstrap placeholder fix-->
         <style>
@@ -75,8 +76,72 @@
             </style>
         @endif
 
+        {{-- Header iniziale (logo + link) --}}
+        <style>
+            .public-main-header {
+                background-color: #ffffff;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .public-main-header-inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 0;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .public-main-header-logo img {
+                max-height: 40px;
+                width: auto;
+            }
+            .public-main-header-left {
+                display: flex;
+                align-items: center;
+            }
+            .public-main-header-nav a {
+                display: inline-block;
+                margin-left: 16px;
+                font-size: 14px;
+                color: #4b5563;
+            }
+            .public-main-header-nav a:hover {
+                color: #111827;
+                text-decoration: none;
+            }
+            @media (max-width: 767px) {
+                .public-main-header-inner {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .public-main-header-nav a {
+                    margin-left: 0;
+                    margin-right: 16px;
+                    margin-top: 4px;
+                }
+            }
+        </style>
     </head>
     <body class="attendize">
+        @include('Shared.Partials.FacebookSdk')
+
+        <header class="public-main-header">
+            <div class="container">
+                <div class="public-main-header-inner">
+                    <div class="public-main-header-left">
+                        <a href="{{ route('index') }}" class="public-main-header-logo">
+                            <img src="{{ asset('assets/images/logo-dark.png') }}" alt="{{ config('app.name') }}">
+                        </a>
+                    </div>
+                    <nav class="public-main-header-nav">
+                        <a href="{{ route('index') }}">Home</a>
+                        <a href="{{ route('index') }}#events">Eventi</a>
+                        <a href="{{ url('/login') }}">Area riservata</a>
+                        <a href="{{ route('index') }}#footer-contatti">Contatti</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
         <div id="event_page_wrap" vocab="http://schema.org/" typeof="Event">
             @yield('content')
 

@@ -1,6 +1,6 @@
 <div class="well">
     <p>
-        インストールが完了するまで数分かかる場合があります。 [<b>Attendizeのインストール</b>]をクリックすると、設定が次のファイルに書き込まれます。
+        インストールが完了するまで数分かかる場合があります。 [<b>EventiOneのインストール</b>]をクリックすると、設定が次のファイルに書き込まれます。
         <b>{{base_path('.env')}}</b>ファイルを編集して、これらの設定を手動で変更することができます。
     </p>
     <p>
@@ -14,6 +14,6 @@
         <a href="https://www.attendize.com/troubleshooting.html">トラブルシューティングガイド</a>もご覧ください。
     </p>
     <p>
-        Attendizeをインストールする前に、<a style="text-decoration: underline;" target="_blank" href="https://www.attendize.com/license.html">ライセンス</a>を読んでください。
+        EventiOneをインストールする前に、<a style="text-decoration: underline;" target="_blank" href="https://www.attendize.com/license.html">ライセンス</a>を読んでください。
     </p>
 </div>

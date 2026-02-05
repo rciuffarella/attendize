@@ -11,7 +11,7 @@
 
         -->
         <title>
-            @yield('title', config('app.name').' - '.config('app.url'))
+            @yield('title', 'EventiOne')
         </title>
 
         <meta charset="utf-8" />
@@ -19,6 +19,7 @@
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
 
         {!! Html::style('assets/stylesheet/frontend.css') !!}
+        {!! Html::style(asset('assets/stylesheet/customfrontend.css')) !!}
 
         <style>
             .public-main-header {
@@ -36,11 +37,6 @@
             .public-main-header-logo img {
                 max-height: 40px;
                 width: auto;
-            }
-            .public-main-header-title {
-                font-size: 18px;
-                font-weight: 600;
-                margin-left: 8px;
             }
             .public-main-header-left {
                 display: flex;
@@ -81,7 +77,6 @@
                         <a href="{{ route('index') }}" class="public-main-header-logo">
                             <img src="{{ asset('assets/images/logo-dark.png') }}" alt="{{ config('app.name') }}">
                         </a>
-                        <span class="public-main-header-title">Piattaforma Eventi</span>
                     </div>
                     <nav class="public-main-header-nav">
                         <a href="{{ route('index') }}">Home</a>
@@ -96,6 +91,16 @@
         <div id="public_page_wrap">
             @yield('content')
         </div>
+
+        <footer id="footer-contatti" class="container-fluid" style="margin-top: 40px; padding: 24px 0; border-top: 1px solid #e5e7eb; background: #f9fafb; color: #6b7280; font-size: 14px; text-align: center;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        @include('Shared.Partials.PoweredBy')
+                    </div>
+                </div>
+            </div>
+        </footer>
 
         {{-- Cookie Law Banner --}}
         <div id="cookie-law-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:9999; background:#111827; color:#f9fafb; padding:12px 0; font-size:13px;">

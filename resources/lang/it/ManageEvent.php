@@ -8,7 +8,7 @@ return [
     'attendee_cancelled' => 'Annullato',
     'attendee_cancelled_help' => 'Questo partecipante è stato annullato',
     'attendees_file_requirements' => 'Il file deve essere .csv e la prima riga deve contenere first_name, cognome, e-mail',
-    'attendize_qrcode_check_in' => 'Attendize QRCode check-in',
+    'attendize_qrcode_check_in' => 'EventiOne QRCode check-in',
     'cancel_attendee_title' => 'Annulla :cancel',
     'cancel_description' => 'Annullando i partecipanti, saranno rimossi dall\'elenco dei partecipanti.',
     'cancel_notify' => 'Notifica :name che il biglietto è stato annullato.',

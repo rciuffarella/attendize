@@ -22,7 +22,7 @@ return array(
     'database_username' => 'Nom d\'utilisateur pour la base de données',
     'email_settings' => 'Paramètres de courriel',
     'files_n_folders_check' => 'Vérification des fichiers et répertoires',
-    'install' => 'Installer Attendize',
+    'install' => 'Installer EventiOne',
     'mail_encryption' => 'Chiffrement du courriel',
     'mail_driver' => 'Pilote du courriel',
     'mail_driver_help' => 'Pour utiliser la fonction <a target="_blank" href="http://php.net/manual/fr/function.mail.php">mail</a> de PHP, saisissez <b>mail</b> dans ce champ et laissez les champs ci-dessous vides.',
@@ -42,10 +42,10 @@ return array(
     'php_version_check' => 'Vérification de la version de PHP',
     'requirement_met' => 'Succès : l\'extension <b>:requirement</b> est chargée',
     'requirement_not_met' => 'Erreur : l\'extension <b>:requirement</b> n\'est pas chargée',
-    'setup' => 'Attendize est configuré',
-    'setup_completed' => 'Attendize est déjà configuré',
-    'setup_completed_already_message' => "Un fichier d\'installation a été détecté, ce qui signifie que la configuration d\'Attendize a déjà été effectuée. <br /> Si vous n\'avez pas défini d\'utilisateur par défaut, vous pouvez " .
+    'setup' => 'EventiOne est configuré',
+    'setup_completed' => 'EventiOne est déjà configuré',
+    'setup_completed_already_message' => "Un fichier d\'installation a été détecté, ce qui signifie que la configuration d\'EventiOne a déjà été effectuée. <br /> Si vous n\'avez pas défini d\'utilisateur par défaut, vous pouvez " .
                                          "<a href='/signup'>créer l\'utilisateur par défaut</a><br />Si vous avez déjà créé un utilisateur par défaut, vous pouvez <a href='/login'>vous connecter ici </a>",
     'test_database_connection' => 'Test de la connexion à la base de données',
-    'title' => 'Installateur Web d\'Attendize',
+    'title' => 'Installateur Web d\'EventiOne',
 );

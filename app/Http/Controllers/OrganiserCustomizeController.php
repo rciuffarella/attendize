@@ -6,6 +6,7 @@ use App\Models\Organiser;
 use File;
 use Image;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Validator;
 
 class OrganiserCustomizeController extends MyBaseController
@@ -48,35 +49,42 @@ class OrganiserCustomizeController extends MyBaseController
             ]);
         }
 
-        $organiser->name = $request->get('name');
-        $organiser->about = prepare_markdown($request->get('about'));
-        $organiser->google_analytics_code = $request->get('google_analytics_code');
-        $organiser->google_tag_manager_code = $request->get('google_tag_manager_code');
-        $organiser->email = $request->get('email');
-        $organiser->enable_organiser_page = $request->get('enable_organiser_page');
-        $organiser->facebook = $request->get('facebook');
-        $organiser->twitter = $request->get('twitter');
+        $nameFromRequest = $request->input('name');
+        Log::info('OrganiserCustomize postEditOrganiser', [
+            'organiser_id' => $organiser_id,
+            'name_from_request' => $nameFromRequest,
+            'request_all_keys' => array_keys($request->all()),
+        ]);
 
-        $organiser->tax_name = $request->get('tax_name');
-        $organiser->tax_value = round($request->get('tax_value'), 2);
-        $organiser->tax_id = $request->get('tax_id');
-        $organiser->charge_tax = ($request->get('charge_tax') == 1) ? 1 : 0;
+        $organiser->update([
+            'name'                      => trim((string) ($nameFromRequest ?? $organiser->name)),
+            'about'                     => prepare_markdown($request->get('about')),
+            'google_analytics_code'     => $request->get('google_analytics_code'),
+            'google_tag_manager_code'   => $request->get('google_tag_manager_code'),
+            'email'                     => $request->get('email'),
+            'enable_organiser_page'     => $request->get('enable_organiser_page'),
+            'facebook'                  => $request->get('facebook'),
+            'twitter'                   => $request->get('twitter'),
+            'tax_name'                  => $request->get('tax_name'),
+            'tax_value'                 => round((float) ($request->get('tax_value') ?? 0), 2),
+            'tax_id'                    => $request->get('tax_id'),
+            'charge_tax'                => ($request->get('charge_tax') == 1) ? 1 : 0,
+        ]);
 
         if ($request->get('remove_current_image') == '1') {
-            $organiser->logo_path = '';
+            $organiser->update(['logo_path' => '']);
         }
 
         if ($request->hasFile('organiser_logo')) {
             $organiser->setLogo($request->file('organiser_logo'));
+            $organiser->save();
         }
-
-        $organiser->save();
 
         session()->flash('message', trans("Controllers.successfully_updated_organiser"));
 
         return response()->json([
             'status'      => 'success',
-            'redirectUrl' => '',
+            'redirectUrl' => route('showOrganiserCustomize', ['organiser_id' => $organiser_id]),
         ]);
     }
 

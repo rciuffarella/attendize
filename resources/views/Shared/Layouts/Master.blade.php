@@ -12,7 +12,7 @@
     -->
     <title>
         @section('title')
-            Attendize -
+            EventiOne -
         @show
     </title>
 
@@ -28,6 +28,7 @@
 
     <!--Style-->
     {!! Html::style(config('attendize.cdn_url_static_assets').'/assets/stylesheet/application.css') !!}
+    {!! Html::style(asset('assets/stylesheet/customadmin.css')) !!}
     <!--/Style-->
 
     <!--rtl-style-->
@@ -44,7 +45,7 @@
 
     <div class="navbar-header">
         <a class="navbar-brand" href="javascript:void(0);">
-            <img style="width: 150px;" class="logo" alt="Attendize" src="{{asset('assets/images/logo-light.png')}}"/>
+            <img class="logo" alt="{{ config('app.name') }}" src="{{ asset('assets/images/logo-white.png') }}"/>
         </a>
     </div>
 

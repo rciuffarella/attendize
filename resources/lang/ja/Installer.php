@@ -19,7 +19,7 @@ return array(
     'database_username'                           => 'Database Username',
     'email_settings'                              => 'Email Settings',
     'files_n_folders_check'                       => 'Files & Folders Check',
-    'install'                                     => 'Install Attendize',
+    'install'                                     => 'Install EventiOne',
     'mail_encryption'                             => 'Mail Encryption',
     'mail_driver'                                 => 'Mail Driver',
     'mail_driver_help'                            => 'To use PHP\'s <a target="_blank" href="http://php.net/manual/en/function.mail.php">mail</a> feature enter <b>mail</b> in this box and leave the below fields empty.',
@@ -39,10 +39,10 @@ return array(
     'php_version_check'                           => 'PHP Version Check',
     'requirement_met'                             => 'Success: <b>:requirement</b> extension is loaded',
     'requirement_not_met'                         => 'Error: <b>:requirement</b> extension is not loaded',
-    'setup'                                       => 'Attendize Setup',
-    'setup_completed'                             => 'Attendize Setup Already',
-    'setup_completed_already_message'             => "An install file has been detected which means Attendize setup process has already completed. <br /> If you haven't setup a default user you can " .
+    'setup'                                       => 'EventiOne Setup',
+    'setup_completed'                             => 'EventiOne Setup Already',
+    'setup_completed_already_message'             => "An install file has been detected which means EventiOne setup process has already completed. <br /> If you haven't setup a default user you can " .
                                                      "<a href='/signup'>Signup Default User</a><br />If you have already created a default user you can <a href='/login'>Login Here </a>",
     'test_database_connection'                    => 'Test Database Connection',
-    'title'                                       => 'Attendize Web Installer',
+    'title'                                       => 'EventiOne Web Installer',
 );

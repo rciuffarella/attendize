@@ -6,6 +6,6 @@
         Para restablecer tu contraseña, completa este formulario: {{ route('password.reset', ['token' => $token]) }}.
         <br><br><br>
         Gracias, <br>
-        El equipo de Attendize
+        El equipo de EventiOne
     </div>
 @stop

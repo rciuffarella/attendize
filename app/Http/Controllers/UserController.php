@@ -33,16 +33,20 @@ class UserController extends Controller
     public function postEditUser(Request $request)
     {
         $rules = [
-            'email'        => [
+            'email'      => [
                 'required',
                 'email',
                 'unique:users,email,' . Auth::user()->id . ',id,account_id,' . Auth::user()->account_id
             ],
-            'password'     => [new Passcheck],
-            'new_password' => ['min:8', 'confirmed', 'required_with:password'],
-            'first_name'   => ['required'],
-            'last_name'    => ['required'],
+            'first_name' => ['required'],
+            'last_name'  => ['required'],
         ];
+
+        // Valida password e new_password solo se l'utente ha compilato il campo "vecchia password"
+        if ($request->filled('password')) {
+            $rules['password']     = [new Passcheck];
+            $rules['new_password'] = ['required', 'min:8', 'confirmed'];
+        }
 
         $messages = [
             'email.email'         => trans("Controllers.error.email.email"),

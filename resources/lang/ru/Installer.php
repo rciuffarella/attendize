@@ -22,7 +22,7 @@ return array(
     'database_test_connect_success' => 'Успех! Настройки базы данных работают!',
     'email_settings' => 'Настройки электронной почты',
     'files_n_folders_check' => 'Проверка файлов и папок',
-    'install' => 'Установить Attendize',
+    'install' => 'Установить EventiOne',
     'mail_encryption' => 'Шифрование протокола обмена с почтовым сервером',
     'mail_driver' => 'Почтовый драйвер',
     'mail_driver_help' => 'Для использования PHP\'s <a target="_blank" href="http://php.net/manual/en/function.mail.php">mail</a> фонкционала введите <b>mail</b> в этом поле и оставьте следующие ниже поля пустыми.',
@@ -42,10 +42,10 @@ return array(
     'php_version_check' => 'PHP Проверка версии',
     'requirement_met' => 'Успех: <b>:requirement</b> расширение установлено',
     'requirement_not_met' => 'Ошибка: <b>:requirement</b> расширение не установлено',
-    'setup' => 'Настройка Attendize',
-    'setup_completed' => 'Attendize настройка завершена',
-    'setup_completed_already_message' => "Обнаружен установочный файл, что означает, что процесс установки Attendize уже завершен. <br /> Если вы не зарегистрировали пользователя по умолчанию, вы можете " .
+    'setup' => 'Настройка EventiOne',
+    'setup_completed' => 'EventiOne настройка завершена',
+    'setup_completed_already_message' => "Обнаружен установочный файл, что означает, что процесс установки EventiOne уже завершен. <br /> Если вы не зарегистрировали пользователя по умолчанию, вы можете " .
                                          "<a href='/signup'>Сделать это</a><br />Если вы уже создали пользователя по умолчанию, вы можете <a href='/login'>Войти здесь</a>",
     'test_database_connection' => 'Тестовое подключение к базе данных',
-    'title' => 'Установка Attendize',
+    'title' => 'Установка EventiOne',
 );

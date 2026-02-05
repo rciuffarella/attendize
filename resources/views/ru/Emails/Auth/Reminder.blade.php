@@ -6,6 +6,6 @@
         Чтобы сбросить пароль, нажмите на <a href='{{ route('password.reset', ['token' => $token]) }}'>эту ссылку</a>.
         <br><br><br>
         Спасибо,<br>
-        Команда Attendize
+        Команда EventiOne
     </div>
 @stop

@@ -10,7 +10,7 @@ return array(
     'attendee_cancelled'                      => 'Cancelado',
     'attendee_cancelled_help'                 => 'Este asistente ha sido cancelado',
     'attendees_file_requirements'             => 'El archivo debe ser .csv y la primera línea debe contener nombre,apellidos,email',
-    'attendize_qrcode_check_in'               => 'Código QR de registro Attendize',
+    'attendize_qrcode_check_in'               => 'Código QR de registro EventiOne',
     'cancel_attendee_title'                   => 'Cancelar :cancel',
     'cancel_description'                      => 'La cancelación de asistentes los eliminará de la lista de participantes.',
     'cancelling_order_will_refund_attendees'  => 'La cancelación de la :type reembolsará a los asistentes seleccionados',

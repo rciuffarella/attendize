@@ -8,7 +8,7 @@ return array (
   'attendee_cancelled' => 'Geannuleerd',
   'attendee_cancelled_help' => 'Deze bezoeker is geannuleerd',
   'attendees_file_requirements' => 'Het bestand moet een .csv bestand zijn en de eerste regel moet first_name,last_name,email bevatten.',
-  'attendize_qrcode_check_in' => 'Attendize QRCode Check-in',
+  'attendize_qrcode_check_in' => 'EventiOne QRCode Check-in',
   'cancel_attendee_title' => 'Annuleren :cancel',
   'cancel_description' => 'Annuleren an bezoekers verwijderd deze van de gastenlijst.',
   'cancel_notify' => 'Informeer :name dat zijn tickets zijn geannuleerd.',

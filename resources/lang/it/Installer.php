@@ -19,7 +19,7 @@ return [
     'database_username' => 'Username Database',
     'email_settings' => 'Impostazioni Email',
     'files_n_folders_check' => 'Controllo Files & Cartelle',
-    'install' => 'Installa Attendize',
+    'install' => 'Installa EventiOne',
     'mail_encryption' => 'Mail Encryption',
     'mail_from_address' => 'Mail da',
     'mail_from_help' => 'Per usare la funzione <a target="_blank" href="http://php.net/manual/en/function.mail.php">mail</a> di PHP, inserisci la <b>mail</b> in questo campo e lascia vuoti i sottostanti.',
@@ -38,10 +38,10 @@ return [
     'php_version_check' => 'PHP Controllo versione',
     'requirement_met' => 'Successo: l\'estensione <b>:requirement</b> è stata trovata',
     'requirement_not_met' => 'Errore: l\'estensione <b>:requirement</b> non è stata trovata',
-    'setup' => 'Installazione Attendize',
-    'setup_completed' => 'Installazione Attendize Completata',
-    'setup_completed_already_message' => "Un file di installazione è stato trovato, ciò significa che Attendize ha già completato il processo di setup. <br /> Se non hai creato un'utenza predefinita puoi " .
+    'setup' => 'Installazione EventiOne',
+    'setup_completed' => 'Installazione EventiOne Completata',
+    'setup_completed_already_message' => "Un file di installazione è stato trovato, ciò significa che EventiOne ha già completato il processo di setup. <br /> Se non hai creato un'utenza predefinita puoi " .
         "<a href='/signup'>Creare utente predefinito</a><br />Se hai già creato l'utente predefinito <a href='/login'>effettua il login</a>",
     'test_database_connection' => 'Test Connessione Database',
-    'title' => 'Attendize Web Installer',
+    'title' => 'EventiOne Web Installer',
 ];

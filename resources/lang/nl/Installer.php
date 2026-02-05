@@ -22,7 +22,7 @@ return array(
     'database_username' => 'Database gebruikersnaam',
     'email_settings' => 'Email instellingen',
     'files_n_folders_check' => 'Bestanden & Mappen check',
-    'install' => 'Installeren Attendize',
+    'install' => 'Installeren EventiOne',
     'mail_encryption' => 'Mail encryptie',
     'mail_driver' => 'Mail apparaatstuurprogramma',
     'mail_driver_help' => 'Om PHP\'s <a target="_blank" href="http://php.net/manual/en/function.mail.php">mail</a> functie te gebruiken enter <b>mail</b> in dit veld en laat de overige velden leeg.',
@@ -42,10 +42,10 @@ return array(
     'php_version_check' => 'PHP versie controle',
     'requirement_met' => 'Succes: <b>:requirement</b> extensie is geladen',
     'requirement_not_met' => 'Fout: <b>:requirement</b> extensie is niet geladen',
-    'setup' => 'Attendize installatie',
-    'setup_completed' => 'Attendize reeds geinstalleerd',
-    'setup_completed_already_message' => "Er is reeds een installatiebestand gevonden wat betekent dat Attendize reeds is geinstalleerd. <br /> Indien u geen standaard gebruiker heeft geïnstalleerd kunt u " .
+    'setup' => 'EventiOne installatie',
+    'setup_completed' => 'EventiOne reeds geinstalleerd',
+    'setup_completed_already_message' => "Er is reeds een installatiebestand gevonden wat betekent dat EventiOne reeds is geinstalleerd. <br /> Indien u geen standaard gebruiker heeft geïnstalleerd kunt u " .
                                          "<b><a href='/signup'>hier</a></b><br /> een gebruiker aanmaken. Indien u dat wel heeft gedaan, kunt u <b><a href='/login'>hier</a></b> inloggen.",
     'test_database_connection' => 'Test database connectie',
-    'title' => 'Attendize Web Installer',
+    'title' => 'EventiOne Web Installer',
 );

@@ -1,7 +1,7 @@
 @extends('Public.Layouts.PublicPage')
 
 @section('title')
-    {{ config('app.name') }} - @lang('Public_ViewOrganiser.upcoming_events')
+    EventiOne - @lang('Public_ViewOrganiser.upcoming_events')
 @overwrite
 
 @section('head')
@@ -10,11 +10,28 @@
         
         /* Hero Banner */
         .hero-banner {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            background: url('{{ asset("banner.jpeg") }}') center center no-repeat;
+            background-size: cover;
+            background-attachment: scroll;
             color: #ffffff;
             padding: 80px 15px 60px;
             text-align: center;
             margin-bottom: 50px;
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+        .hero-banner .container {
+            position: relative;
+            z-index: 1;
         }
 
         .hero-banner h1 {
@@ -159,7 +176,8 @@
         .featured-event-image {
             width: 100%;
             height: 200px;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
             background: #000;
         }
 
@@ -195,14 +213,25 @@
             margin-bottom: 40px;
         }
 
+        .events-grid .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .events-grid .row > [class*="col-"] {
+            display: flex;
+        }
+
         .event-card {
+            width: 100%;
+            height: 100%;
             background: #ffffff;
             border-radius: 12px;
             box-shadow: 0 4px 16px rgba(15,23,42,.12);
             margin-bottom: 25px;
             overflow: hidden;
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
@@ -212,23 +241,26 @@
         }
 
         .event-card-image {
-            flex: 0 0 38%;
+            flex: 0 0 auto;
+            width: 100%;
+            height: 200px;
             background-color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 200px;
         }
 
         .event-card-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
             display: block;
         }
 
         .event-card-body {
             flex: 1 1 auto;
+            min-height: 0;
             padding: 24px;
             display: flex;
             flex-direction: column;
@@ -239,8 +271,12 @@
             font-weight: 600;
             margin: 0 0 10px;
             color: #111827;
-            white-space: normal;
-            word-wrap: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
         }
 
         .event-card-title a {
@@ -334,12 +370,8 @@
                 grid-template-columns: 1fr;
             }
 
-            .event-card {
-                flex-direction: column;
-            }
-
             .event-card-image {
-                min-height: 180px;
+                height: 180px;
             }
         }
     </style>

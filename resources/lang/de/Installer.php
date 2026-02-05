@@ -22,7 +22,7 @@ return array(
     'database_username' => 'Datenbank Benutzer',
     'email_settings' => 'Email Einstellugen',
     'files_n_folders_check' => 'Dateien und Ordner Check',
-    'install' => 'Attendize installieren',
+    'install' => 'EventiOne installieren',
     'mail_encryption' => 'Mail Verschlüsselung',
     'mail_from_address' => 'Mail Absenderadresse',
     'mail_from_help' => 'Um PHP\'s <a target="_blank" href="http://php.net/manual/en/function.mail.php">mail</a> funktion zu benutzen geben Sie <b>mail</b> in diese Box ein und lassen Sie die restlichen Felder frei',
@@ -41,10 +41,10 @@ return array(
     'php_version_check' => 'PHP Versions Prüfung',
     'requirement_met' => 'Erfolg: <b>:requirement</b> erweiterung geladen.',
     'requirement_not_met' => 'Fehler: <b>:requirement</b> erweiterung nicht geladen',
-    'setup' => 'Attendize Setup',
-    'setup_completed' => 'Attendize Setup abgeschlossen',
+    'setup' => 'EventiOne Setup',
+    'setup_completed' => 'EventiOne Setup abgeschlossen',
     'setup_completed_already_message' => "Es wurde eine Installationsdatei erkannt. Dies bedeutet, das bereits eine Installation durchgeführt worden. <br /> Wenn Sie keinen Standartbenutzer erstellt haben, können Sie sich " .
                                          "<a href='/signup'>einen Standartbenutzer erstellen</a><br />Wenn Sie bereits einen Standart Benutzer erstellt haben können Sie sich hier <a href='/login'>einloggen </a>",
     'test_database_connection' => 'Datenbankverbindung testen.',
-    'title' => 'Attendize Web Installer',
+    'title' => 'EventiOne Web Installer',
 );

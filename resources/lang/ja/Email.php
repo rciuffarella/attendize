@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    'attendize_register'      => 'Attendizeに登録していただきありがとうございます',
+    'attendize_register'      => 'EventiOneに登録していただきありがとうございます',
     'contact_organiser' => ':organiser_name に連絡するには <a href="mailto::organiser_email">:organiser_email</a>、またはこのメールに返信してください。',
     'invite_user'             => ':nameがあなたを:appアカウントに追加しました。',
   'message_received_from_organiser' => ':event_title に関して :organiser_name からメッセージを受け取りました。',

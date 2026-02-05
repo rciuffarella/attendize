@@ -6,6 +6,6 @@
         パスワードを再設定するには、次の形式で入力してください: {{ route('password.reset', ['token' => $token]) }}.
         <br><br><br>
         ありがとう、<br>
-        Team Attendize
+        Team EventiOne
     </div>
 @stop

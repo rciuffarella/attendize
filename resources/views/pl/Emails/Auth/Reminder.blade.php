@@ -6,6 +6,6 @@
         aby zresetować hasło, wypełnij ten formularz: {{ route('showResetPassword', ['token' => $token]) }}.
         <br><br><br>
         Dziękujemy,<br>
-        Zespół Attendize.
+        Zespół EventiOne.
     </div>
 @stop

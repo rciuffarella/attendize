@@ -6,6 +6,6 @@
         Um Dein Passwort zurückzusetzen kannst Du dieses Formular ausfüllen: {{ route('password.reset', ['token' => $token]) }}.
         <br><br><br>
         Danke,<br>
-       	Attendize Team
+       	EventiOne Team
     </div>
 @stop

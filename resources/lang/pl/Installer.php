@@ -43,5 +43,5 @@ return array (
   'requirement_not_met' => 'Błąd: wtyczka <b>:requirement</b> nie jest załadowana',
   'setup' => 'Instalacja',
   'test_database_connection' => 'Przetestuj połączenie z bazą danych',
-  'title' => 'Instalator Attendize',
+  'title' => 'Instalator EventiOne',
 );

@@ -222,7 +222,7 @@
             </div>
         </div>
     </div>
-    <img src="https://cdn.attendize.com/lg.png" />
+    <img src="{{ asset('assets/images/logo-dark.png') }}" alt="{{ config('app.name') }}" />
 </section>
 @if(session()->get('message'))
     <script>showMessage('{{session()->get('message')}}');</script>

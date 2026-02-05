@@ -1,0 +1,55 @@
+/**
+ * Custom Frontend CSS - Pagine pubbliche e pagine evento
+ * Modifica questo file per personalizzare l'aspetto del sito pubblico.
+ */
+
+/* -------------------------------------------------------------------------
+   Header pubblico (logo + link)
+   ------------------------------------------------------------------------- */
+.public-main-header { }
+.public-main-header-inner { }
+.public-main-header-logo { }
+.public-main-header-logo img { }
+.public-main-header-nav a { }
+.public-main-header-left { }
+
+/* -------------------------------------------------------------------------
+   Hero / Banner (homepage - ricerca eventi)
+   ------------------------------------------------------------------------- */
+.hero-banner { }
+.hero-banner h1 { }
+.hero-banner p { }
+.search-container { }
+.search-box { }
+.search-box input { }
+.search-box button { }
+
+/* -------------------------------------------------------------------------
+   Categorie e griglia eventi
+   ------------------------------------------------------------------------- */
+.categories-section { }
+.categories-grid { }
+.category-box { }
+.featured-section { }
+.featured-events-grid { }
+.featured-event-card { }
+
+/* -------------------------------------------------------------------------
+   Pagina evento (dettaglio, biglietti, checkout)
+   ------------------------------------------------------------------------- */
+#event_page_wrap { }
+.event-header-section { }
+.event-tickets-section { }
+.ticket-list { }
+.seat-map-container { }
+
+/* -------------------------------------------------------------------------
+   Footer pubblico
+   ------------------------------------------------------------------------- */
+#footer-contatti { }
+.public-footer { }
+
+/* -------------------------------------------------------------------------
+   Utilities
+   ------------------------------------------------------------------------- */
+/* Aggiungi qui le tue regole personalizzate */

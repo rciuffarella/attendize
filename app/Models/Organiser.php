@@ -11,6 +11,29 @@ use Image;
 class Organiser extends MyBaseModel implements AuthenticatableContract
 {
     use Authenticatable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'about',
+        'email',
+        'phone',
+        'facebook',
+        'twitter',
+        'logo_path',
+        'google_analytics_code',
+        'google_tag_manager_code',
+        'enable_organiser_page',
+        'tax_name',
+        'tax_value',
+        'tax_id',
+        'charge_tax',
+    ];
+
     /**
      * The validation rules for the model.
      *
@@ -114,7 +137,7 @@ class Organiser extends MyBaseModel implements AuthenticatableContract
     {
         return route('showOrganiserHome', [
             'organiser_id'   => $this->id,
-            'organiser_slug' => Str::slug($this->oraganiser_name),
+            'organiser_slug' => Str::slug($this->name),
         ]);
     }
 

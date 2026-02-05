@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>
         @section('subject')
-            Message Attendize.com
+            Message EventiOne
         @show
     </title>
 </head>

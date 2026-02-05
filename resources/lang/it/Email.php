@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'attendize_register' => 'Grazie per esserti registrato su Attendize',
+    'attendize_register' => 'Grazie per esserti registrato su EventiOne',
     'contact_organiser' => 'Puoi contattare :organiser_name direttamente via <a href="mailto::organiser_email">:organiser_email</a> o rispondendo a questa email.',
     'invite_user' => ':name ti ha aggiunto ad un account :app ',
     'message_received_from_organiser' => "Hai ricevuto un messaggio da :organiser_name per l'evento :event_title.",

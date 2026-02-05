@@ -8,7 +8,7 @@ return array (
   'attendee_cancelled' => 'Anulowani',
   'attendee_cancelled_help' => 'Ten uczestnik został anulowany',
   'attendees_file_requirements' => 'Plik musi być w formacie .csv a pierwsza linia pliku musi zawierać frazę first_name,last_name,email',
-  'attendize_qrcode_check_in' => 'Lista Uczetników Attendize z kodami QR',
+  'attendize_qrcode_check_in' => 'Lista Uczetników EventiOne z kodami QR',
   'cancel_attendee_title' => 'Anuluj :cancel',
   'cancel_description' => 'Anulując uczestnika usuniesz go z listy uczestników.',
   'cancel_notify' => 'Powiadom :name, że ich bilet jest anulowany.',
