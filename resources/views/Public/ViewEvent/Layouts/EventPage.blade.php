@@ -150,7 +150,7 @@
         </div>
 
         {{-- Cookie Law Banner --}}
-        <div id="cookie-law-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:9999; background:#111827; color:#f9fafb; padding:12px 0; font-size:13px;">
+        <div id="cookie-law-banner" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:9999; background:#111827; color:#f9fafb; padding:12px 0 calc(12px + env(safe-area-inset-bottom)); font-size:13px; height:auto; max-height:none; overflow:visible; box-sizing:border-box;">
             <div class="container" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
                 <div style="max-width:780px; line-height:1.4;">
                     Questo sito utilizza cookie tecnici e, previo tuo consenso, cookie di profilazione o di terze parti per finalità statistiche e di miglioramento dell’esperienza di navigazione.

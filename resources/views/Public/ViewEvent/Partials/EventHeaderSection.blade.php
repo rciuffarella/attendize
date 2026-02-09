@@ -31,7 +31,7 @@
                     <a href="{{ $event->event_url }}">
                         <img src="{{ asset($event->images->first()['image_path']) }}"
                              alt="{{ $event->title }}"
-                             style="width: 100%; max-height: 420px; object-fit: cover; border-radius: 6px;">
+                             style="width: 100%; height: auto; max-height: none; object-fit: contain; border-radius: 6px; display: block;">
                     </a>
                 </div>
             @endif
